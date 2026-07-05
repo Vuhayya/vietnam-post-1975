@@ -10,7 +10,7 @@ export default function Obstacle({ data }: { data: ObstaclePuzzle }) {
           <img src={data.imageUrl} className="absolute inset-0 w-full h-full object-cover" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-white/30 text-center px-4">
-            (Dat anh chuong ngai vat trong data)
+            (Đặt ảnh chướng ngại vật trong data)
           </div>
         )}
         {/* 4 manh che */}
@@ -38,7 +38,7 @@ export default function Obstacle({ data }: { data: ObstaclePuzzle }) {
             }`}
           >
             <div className="text-sm text-white/70">
-              Hang {i + 1}: {row.clue}
+              Hàng {i + 1}: {row.clue}
             </div>
             {row.revealed && (
               <div className="text-xl font-black text-[#ffcd00] tracking-wide">{row.answer}</div>
@@ -52,7 +52,7 @@ export default function Obstacle({ data }: { data: ObstaclePuzzle }) {
               : "border-dashed border-white/30 text-white/50"
           }`}
         >
-          <div className="text-xs">CHUONG NGAI VAT</div>
+          <div className="text-xs">CHƯỚNG NGẠI VẬT</div>
           <div className="text-2xl font-black tracking-widest">
             {data.keywordRevealed ? data.keyword : "? ? ? ? ?"}
           </div>

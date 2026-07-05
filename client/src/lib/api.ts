@@ -20,6 +20,6 @@ export interface MatchRecord {
 
 export async function fetchHistory(): Promise<MatchRecord[]> {
   const r = await fetch(`${SERVER_URL}/api/history`);
-  if (!r.ok) throw new Error("Khong tai duoc lich su");
+  if (!r.ok) throw new Error("Không tải được lịch sử");
   return r.json();
 }

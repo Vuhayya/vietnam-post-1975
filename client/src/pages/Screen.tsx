@@ -60,7 +60,7 @@ export default function Screen() {
           onClick={enableAudio}
           className="fixed top-4 right-4 z-50 bg-[#ffcd00] text-red-950 font-bold px-4 py-2 rounded-full shadow-lg animate-pulse"
         >
-          🔊 Bam de bat am thanh & AI doc
+          🔊 Bấm để bật âm thanh & AI đọc
         </button>
       )}
 
@@ -96,7 +96,7 @@ export default function Screen() {
           ) : q && state?.questionVisible ? (
             <div className="card flex-1 flex flex-col justify-center">
               <div className="text-sm text-[#ffcd00] mb-2">
-                Cau {q.index + 1}/{q.total} · {q.points} diem
+                Câu {q.index + 1}/{q.total} · {q.points} điểm
               </div>
               <div className="text-4xl font-bold leading-snug mb-6">{q.text}</div>
               {q.media?.url && (
@@ -126,22 +126,22 @@ export default function Screen() {
               )}
               {state.revealed && !q.options && (
                 <div className="mt-4 text-2xl text-green-300 font-bold">
-                  Dap an: {state.revealedAnswer}
+                  Đáp án: {state.revealedAnswer}
                 </div>
               )}
             </div>
           ) : (
             <div className="card flex-1 flex items-center justify-center text-3xl text-white/50">
               {state?.phase === "finished"
-                ? "KET THUC - Chuc mung nha vo dich!"
-                : `Ma phong: ${code} · Cho bat dau...`}
+                ? "KẾT THÚC - Chúc mừng nhà vô địch!"
+                : `Mã phòng: ${code} · Chờ bắt đầu...`}
             </div>
           )}
 
           {/* nguoi bam chuong */}
           {winner && (
             <div className="bg-green-600 rounded-2xl py-4 text-center text-3xl font-black animate-pulse">
-              🔔 {winner.name} gianh quyen tra loi!
+              🔔 {winner.name} giành quyền trả lời!
             </div>
           )}
         </div>
@@ -151,7 +151,7 @@ export default function Screen() {
       </div>
 
       <div className="text-center text-white/40 text-sm mt-4">
-        Nguoi choi vao tai dia chi web nay · Ma phong: <b className="text-[#ffcd00]">{code}</b>
+        Người chơi vào tại địa chỉ web này · Mã phòng: <b className="text-[#ffcd00]">{code}</b>
       </div>
     </div>
   );

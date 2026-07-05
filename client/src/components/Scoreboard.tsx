@@ -12,7 +12,7 @@ export default function Scoreboard({
   const top = compact ? players : players.slice(0, 10);
   return (
     <div className="card">
-      <div className="font-bold text-[#ffcd00] mb-3">BANG XEP HANG</div>
+      <div className="font-bold text-[#ffcd00] mb-3">BẢNG XẾP HẠNG</div>
       <div className="space-y-2">
         {top.map((p, i) => (
           <div
@@ -38,12 +38,12 @@ export default function Scoreboard({
             </div>
             <div className="flex-1 truncate font-medium">
               {p.name}
-              {!p.connected && <span className="text-red-400 text-xs ml-2">(mat ket noi)</span>}
+              {!p.connected && <span className="text-red-400 text-xs ml-2">(mất kết nối)</span>}
             </div>
             <div className="font-black text-lg">{p.score}</div>
           </div>
         ))}
-        {top.length === 0 && <div className="text-white/40 text-sm">Chua co nguoi choi</div>}
+        {top.length === 0 && <div className="text-white/40 text-sm">Chưa có người chơi</div>}
       </div>
     </div>
   );

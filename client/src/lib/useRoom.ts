@@ -33,12 +33,12 @@ export function useRoom() {
 }
 
 const PHASE_LABELS: Record<string, string> = {
-  lobby: "Sanh cho",
-  round1: "Vong 1 - Khoi dong",
-  round2: "Vong 2 - Vuot chuong ngai vat",
-  round3: "Vong 3 - Tang toc",
-  round4: "Vong 4 - Ve dich",
-  finished: "Ket thuc",
+  lobby: "Sảnh chờ",
+  round1: "Vòng 1 - Khởi động",
+  round2: "Vòng 2 - Vượt chướng ngại vật",
+  round3: "Vòng 3 - Tăng tốc",
+  round4: "Vòng 4 - Về đích",
+  finished: "Kết thúc",
 };
 
 export function phaseLabel(phase: string) {

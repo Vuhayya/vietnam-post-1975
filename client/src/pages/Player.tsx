@@ -65,11 +65,11 @@ export default function Player() {
       <div className="flex items-center justify-between card !p-3">
         <div>
           <div className="font-bold">{name}</div>
-          <div className="text-xs text-white/60">Phong {code}</div>
+          <div className="text-xs text-white/60">Phòng {code}</div>
         </div>
         <div className="text-right">
           <div className="text-2xl font-black text-[#ffcd00]">{me?.score ?? 0}</div>
-          <div className="text-xs text-white/60">Hang {rank || "-"}</div>
+          <div className="text-xs text-white/60">Hạng {rank || "-"}</div>
         </div>
       </div>
 
@@ -88,8 +88,8 @@ export default function Player() {
       {(!q || !state?.questionVisible) && (
         <div className="card text-center py-10 text-white/70">
           {state?.phase === "finished"
-            ? "Tran dau da ket thuc. Cam on ban da tham gia!"
-            : "Cho MC ra cau hoi..."}
+            ? "Trận đấu đã kết thúc. Cảm ơn bạn đã tham gia!"
+            : "Chờ MC ra câu hỏi..."}
         </div>
       )}
 
@@ -106,7 +106,7 @@ export default function Player() {
               : "bg-[#ffcd00] text-red-950 animate-pulse"
           }`}
         >
-          {iAmBuzzWinner ? "BAN GIANH QUYEN TRA LOI!" : iAmLocked ? "DA BI KHOA" : "BAM CHUONG!"}
+          {iAmBuzzWinner ? "BẠN GIÀNH QUYỀN TRẢ LỜI!" : iAmLocked ? "ĐÃ BỊ KHÓA" : "BẤM CHUÔNG!"}
         </button>
       ) : null}
 
@@ -148,7 +148,7 @@ export default function Player() {
             <div className="flex gap-2">
               <input
                 className="flex-1 px-4 py-3 rounded-lg bg-white/10 outline-none"
-                placeholder="Nhap dap an..."
+                placeholder="Nhập đáp án..."
                 value={textAnswer}
                 onChange={(e) => setTextAnswer(e.target.value)}
                 disabled={!canAnswer}
@@ -158,13 +158,13 @@ export default function Player() {
                 disabled={!canAnswer || !textAnswer.trim()}
                 onClick={() => answer(textAnswer.trim())}
               >
-                Gui
+                Gửi
               </button>
             </div>
           )}
 
           {me?.answered && !state.revealed && (
-            <div className="text-center text-green-300 text-sm">Da gui dap an. Cho ket qua...</div>
+            <div className="text-center text-green-300 text-sm">Đã gửi đáp án. Chờ kết quả...</div>
           )}
           {state.revealed && me?.lastCorrect !== undefined && (
             <div
@@ -172,7 +172,7 @@ export default function Player() {
                 me.lastCorrect ? "text-green-300" : "text-red-300"
               }`}
             >
-              {me.lastCorrect ? "Chinh xac! 🎉" : "Chua dung 😢"}
+              {me.lastCorrect ? "Chính xác! 🎉" : "Chưa đúng 😢"}
             </div>
           )}
         </div>

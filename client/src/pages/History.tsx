@@ -16,24 +16,24 @@ export default function History() {
     <div className="min-h-screen p-6 max-w-3xl mx-auto space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-black">
-          Lich su tran dau <span className="text-[#ffcd00]">& Thong ke</span>
+          Lịch sử trận đấu <span className="text-[#ffcd00]">& Thống kê</span>
         </h1>
         <Link to="/" className="btn-ghost">
-          ← Trang chu
+          ← Trang chủ
         </Link>
       </div>
 
       {error && (
         <div className="card text-red-300">
-          {error}. Co the DB chua bat (mo Docker Desktop) hoac chua co tran nao ket thuc.
+          {error}. Có thể DB chưa bật (mở Docker Desktop) hoặc chưa có trận nào kết thúc.
         </div>
       )}
 
-      {!matches && !error && <div className="text-white/60">Dang tai...</div>}
+      {!matches && !error && <div className="text-white/60">Đang tải...</div>}
 
       {matches && matches.length === 0 && (
         <div className="card text-white/60">
-          Chua co tran nao duoc luu. Choi mot tran va bam "Ket thuc tran dau" de luu lich su.
+          Chưa có trận nào được lưu. Chơi một trận và bấm "Kết thúc trận đấu" để lưu lịch sử.
         </div>
       )}
 
@@ -42,14 +42,14 @@ export default function History() {
           <div className="flex items-center justify-between mb-3">
             <div>
               <div className="font-bold">
-                Phong {m.code}{" "}
-                {m.winner && <span className="text-[#ffcd00]">· Vo dich: {m.winner}</span>}
+                Phòng {m.code}{" "}
+                {m.winner && <span className="text-[#ffcd00]">· Vô địch: {m.winner}</span>}
               </div>
               <div className="text-xs text-white/50">
                 {new Date(m.startedAt).toLocaleString("vi-VN")}
               </div>
             </div>
-            <div className="text-sm text-white/60">{m.results.length} nguoi choi</div>
+            <div className="text-sm text-white/60">{m.results.length} người chơi</div>
           </div>
           <div className="space-y-1">
             {m.results.slice(0, 10).map((r) => (

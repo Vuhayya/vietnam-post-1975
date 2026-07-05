@@ -1,17 +1,17 @@
 import type { Question, ObstaclePuzzle } from "@vnr/shared";
 
 // ============================================================================
-// NGAN HANG CAU HOI - VNR202 Chuong 3: Thong nhat dat nuoc sau 1975
-// (Noi dung mau - GV/nhom co the sua/them thoai mai)
+// NGÂN HÀNG CÂU HỎI - VNR202 Chương 3: Thống nhất đất nước sau 1975
+// (Nội dung mẫu - GV/nhóm có thể sửa/thêm thoải mái)
 // ============================================================================
 
-// ---- VONG 1: KHOI DONG (10 cau trac nghiem) --------------------------------
+// ---- VÒNG 1: KHỞI ĐỘNG (10 câu trắc nghiệm) --------------------------------
 export const ROUND1: Question[] = [
   {
     id: "r1-1",
     phase: "round1",
     type: "mcq",
-    text: "Chien dich Ho Chi Minh lich su ket thuc thang loi vao ngay nao?",
+    text: "Chiến dịch Hồ Chí Minh lịch sử kết thúc thắng lợi vào ngày nào?",
     options: [
       { id: "A", text: "30/4/1975" },
       { id: "B", text: "2/9/1975" },
@@ -21,18 +21,18 @@ export const ROUND1: Question[] = [
     correctAnswer: "A",
     timeLimit: 15,
     points: 10,
-    explanation: "11h30 ngay 30/4/1975, co giai phong tung bay tren noc Dinh Doc Lap.",
+    explanation: "11h30 ngày 30/4/1975, cờ giải phóng tung bay trên nóc Dinh Độc Lập.",
   },
   {
     id: "r1-2",
     phase: "round1",
     type: "mcq",
-    text: "Hoi nghi Hiep thuong chinh tri thong nhat dat nuoc (11/1975) hop tai dau?",
+    text: "Hội nghị Hiệp thương chính trị thống nhất đất nước (11/1975) họp tại đâu?",
     options: [
-      { id: "A", text: "Ha Noi" },
-      { id: "B", text: "Sai Gon" },
-      { id: "C", text: "Hue" },
-      { id: "D", text: "Da Nang" },
+      { id: "A", text: "Hà Nội" },
+      { id: "B", text: "Sài Gòn" },
+      { id: "C", text: "Huế" },
+      { id: "D", text: "Đà Nẵng" },
     ],
     correctAnswer: "B",
     timeLimit: 15,
@@ -42,7 +42,7 @@ export const ROUND1: Question[] = [
     id: "r1-3",
     phase: "round1",
     type: "mcq",
-    text: "Cuoc Tong tuyen cu bau Quoc hoi chung ca nuoc dien ra ngay nao?",
+    text: "Cuộc Tổng tuyển cử bầu Quốc hội chung cả nước diễn ra ngày nào?",
     options: [
       { id: "A", text: "25/4/1976" },
       { id: "B", text: "30/4/1976" },
@@ -57,12 +57,12 @@ export const ROUND1: Question[] = [
     id: "r1-4",
     phase: "round1",
     type: "mcq",
-    text: "Quoc hoi khoa VI (7/1976) quyet dinh doi ten nuoc thanh gi?",
+    text: "Quốc hội khóa VI (7/1976) quyết định đổi tên nước thành gì?",
     options: [
-      { id: "A", text: "Viet Nam Dan chu Cong hoa" },
-      { id: "B", text: "Cong hoa Xa hoi chu nghia Viet Nam" },
-      { id: "C", text: "Cong hoa mien Nam Viet Nam" },
-      { id: "D", text: "Lien bang Dong Duong" },
+      { id: "A", text: "Việt Nam Dân chủ Cộng hòa" },
+      { id: "B", text: "Cộng hòa Xã hội chủ nghĩa Việt Nam" },
+      { id: "C", text: "Cộng hòa miền Nam Việt Nam" },
+      { id: "D", text: "Liên bang Đông Dương" },
     ],
     correctAnswer: "B",
     timeLimit: 15,
@@ -72,7 +72,7 @@ export const ROUND1: Question[] = [
     id: "r1-5",
     phase: "round1",
     type: "mcq",
-    text: "Thanh pho Sai Gon - Gia Dinh duoc doi ten thanh Thanh pho Ho Chi Minh nam nao?",
+    text: "Thành phố Sài Gòn - Gia Định được đổi tên thành Thành phố Hồ Chí Minh năm nào?",
     options: [
       { id: "A", text: "1975" },
       { id: "B", text: "1976" },
@@ -87,12 +87,12 @@ export const ROUND1: Question[] = [
     id: "r1-6",
     phase: "round1",
     type: "mcq",
-    text: "Ky hop dau tien cua Quoc hoi khoa VI da chon Thu do cua ca nuoc la?",
+    text: "Kỳ họp đầu tiên của Quốc hội khóa VI đã chọn Thủ đô của cả nước là?",
     options: [
-      { id: "A", text: "Hue" },
-      { id: "B", text: "TP Ho Chi Minh" },
-      { id: "C", text: "Ha Noi" },
-      { id: "D", text: "Da Nang" },
+      { id: "A", text: "Huế" },
+      { id: "B", text: "TP Hồ Chí Minh" },
+      { id: "C", text: "Hà Nội" },
+      { id: "D", text: "Đà Nẵng" },
     ],
     correctAnswer: "C",
     timeLimit: 15,
@@ -102,12 +102,12 @@ export const ROUND1: Question[] = [
     id: "r1-7",
     phase: "round1",
     type: "mcq",
-    text: "Sau nam 1975, nhiem vu hang dau ve mat nha nuoc cua Viet Nam la gi?",
+    text: "Sau năm 1975, nhiệm vụ hàng đầu về mặt nhà nước của Việt Nam là gì?",
     options: [
-      { id: "A", text: "Phat trien du lich" },
-      { id: "B", text: "Thong nhat dat nuoc ve mat nha nuoc" },
-      { id: "C", text: "Gia nhap ASEAN" },
-      { id: "D", text: "Mo cua kinh te" },
+      { id: "A", text: "Phát triển du lịch" },
+      { id: "B", text: "Thống nhất đất nước về mặt nhà nước" },
+      { id: "C", text: "Gia nhập ASEAN" },
+      { id: "D", text: "Mở cửa kinh tế" },
     ],
     correctAnswer: "B",
     timeLimit: 20,
@@ -117,12 +117,12 @@ export const ROUND1: Question[] = [
     id: "r1-8",
     phase: "round1",
     type: "mcq",
-    text: "Quoc ky nuoc CHXHCN Viet Nam la?",
+    text: "Quốc kỳ nước CHXHCN Việt Nam là?",
     options: [
-      { id: "A", text: "Co do sao vang" },
-      { id: "B", text: "Co bua liem" },
-      { id: "C", text: "Co nua do nua xanh sao vang" },
-      { id: "D", text: "Co trang sao do" },
+      { id: "A", text: "Cờ đỏ sao vàng" },
+      { id: "B", text: "Cờ búa liềm" },
+      { id: "C", text: "Cờ nửa đỏ nửa xanh sao vàng" },
+      { id: "D", text: "Cờ trắng sao đỏ" },
     ],
     correctAnswer: "A",
     timeLimit: 15,
@@ -132,12 +132,12 @@ export const ROUND1: Question[] = [
     id: "r1-9",
     phase: "round1",
     type: "mcq",
-    text: "Viec thong nhat dat nuoc ve mat nha nuoc co y nghia gi quan trong nhat?",
+    text: "Việc thống nhất đất nước về mặt nhà nước có ý nghĩa gì quan trọng nhất?",
     options: [
-      { id: "A", text: "Tao suc manh tong hop di len CNXH" },
-      { id: "B", text: "Tang dan so" },
-      { id: "C", text: "Mo rong lanh tho" },
-      { id: "D", text: "Thu hut dau tu nuoc ngoai" },
+      { id: "A", text: "Tạo sức mạnh tổng hợp đi lên CNXH" },
+      { id: "B", text: "Tăng dân số" },
+      { id: "C", text: "Mở rộng lãnh thổ" },
+      { id: "D", text: "Thu hút đầu tư nước ngoài" },
     ],
     correctAnswer: "A",
     timeLimit: 20,
@@ -147,12 +147,12 @@ export const ROUND1: Question[] = [
     id: "r1-10",
     phase: "round1",
     type: "mcq",
-    text: "Quoc hoi khoa VI la Quoc hoi cua?",
+    text: "Quốc hội khóa VI là Quốc hội của?",
     options: [
-      { id: "A", text: "Rieng mien Bac" },
-      { id: "B", text: "Rieng mien Nam" },
-      { id: "C", text: "Nuoc Viet Nam thong nhat" },
-      { id: "D", text: "Chinh phu lam thoi" },
+      { id: "A", text: "Riêng miền Bắc" },
+      { id: "B", text: "Riêng miền Nam" },
+      { id: "C", text: "Nước Việt Nam thống nhất" },
+      { id: "D", text: "Chính phủ lâm thời" },
     ],
     correctAnswer: "C",
     timeLimit: 15,
@@ -160,54 +160,54 @@ export const ROUND1: Question[] = [
   },
 ];
 
-// ---- VONG 2: VUOT CHUONG NGAI VAT ------------------------------------------
+// ---- VÒNG 2: VƯỢT CHƯỚNG NGẠI VẬT ------------------------------------------
 export const OBSTACLE: ObstaclePuzzle = {
   id: "obstacle-1",
-  imageUrl: "", // co the dat URL anh Dinh Doc Lap / Hoi truong Thong Nhat
-  keyword: "THONG NHAT",
+  imageUrl: "", // có thể đặt URL ảnh Dinh Độc Lập / Hội trường Thống Nhất
+  keyword: "THỐNG NHẤT",
   keywordRevealed: false,
   cornersRevealed: [false, false, false, false],
   rows: [
     {
       id: "row-1",
-      clue: "Ngay 30/4/1975 la ngay giai phong hoan toan mien... ?",
+      clue: "Ngày 30/4/1975 là ngày giải phóng hoàn toàn miền... ?",
       answer: "NAM",
       revealed: false,
     },
     {
       id: "row-2",
-      clue: "Ten goi khac cua Dinh Doc Lap ngay nay: Hoi truong ... ?",
-      answer: "THONG NHAT",
+      clue: "Tên gọi khác của Dinh Độc Lập ngày nay: Hội trường ... ?",
+      answer: "THỐNG NHẤT",
       revealed: false,
     },
     {
       id: "row-3",
-      clue: "Thang loi 1975 mo ra ky nguyen ca nuoc di len chu nghia... ?",
-      answer: "XA HOI",
+      clue: "Thắng lợi 1975 mở ra kỷ nguyên cả nước đi lên chủ nghĩa... ?",
+      answer: "XÃ HỘI",
       revealed: false,
     },
     {
       id: "row-4",
-      clue: "Cuoc Tong tuyen cu 1976 bau ra co quan quyen luc cao nhat: ... hoi ?",
-      answer: "QUOC",
+      clue: "Cuộc Tổng tuyển cử 1976 bầu ra cơ quan quyền lực cao nhất: ... hội ?",
+      answer: "QUỐC",
       revealed: false,
     },
   ],
 };
 
-// ---- VONG 3: TANG TOC (4 cau, tinh diem theo thoi gian + do chinh xac) ------
+// ---- VÒNG 3: TĂNG TỐC (4 câu, tính điểm theo thời gian + độ chính xác) ------
 export const ROUND3: Question[] = [
   {
     id: "r3-1",
     phase: "round3",
     type: "media",
-    text: "Su kien trong hinh dien ra o dau? (Xe tang tien vao Dinh Doc Lap)",
+    text: "Sự kiện trong hình diễn ra ở đâu? (Xe tăng tiến vào Dinh Độc Lập)",
     media: { kind: "image", url: "" },
     options: [
-      { id: "A", text: "Dinh Doc Lap (Sai Gon)" },
-      { id: "B", text: "Phu Chu tich (Ha Noi)" },
-      { id: "C", text: "Kinh thanh Hue" },
-      { id: "D", text: "Toa thi chinh Da Nang" },
+      { id: "A", text: "Dinh Độc Lập (Sài Gòn)" },
+      { id: "B", text: "Phủ Chủ tịch (Hà Nội)" },
+      { id: "C", text: "Kinh thành Huế" },
+      { id: "D", text: "Tòa thị chính Đà Nẵng" },
     ],
     correctAnswer: "A",
     timeLimit: 20,
@@ -217,12 +217,12 @@ export const ROUND3: Question[] = [
     id: "r3-2",
     phase: "round3",
     type: "media",
-    text: "Sap xep dung: su kien nao dien ra TRUOC?",
+    text: "Sắp xếp đúng: sự kiện nào diễn ra TRƯỚC?",
     options: [
-      { id: "A", text: "Chien dich Ho Chi Minh (4/1975)" },
-      { id: "B", text: "Tong tuyen cu ca nuoc (4/1976)" },
-      { id: "C", text: "Doi ten nuoc CHXHCN Viet Nam (7/1976)" },
-      { id: "D", text: "Doi ten TP Ho Chi Minh (7/1976)" },
+      { id: "A", text: "Chiến dịch Hồ Chí Minh (4/1975)" },
+      { id: "B", text: "Tổng tuyển cử cả nước (4/1976)" },
+      { id: "C", text: "Đổi tên nước CHXHCN Việt Nam (7/1976)" },
+      { id: "D", text: "Đổi tên TP Hồ Chí Minh (7/1976)" },
     ],
     correctAnswer: "A",
     timeLimit: 20,
@@ -232,13 +232,13 @@ export const ROUND3: Question[] = [
     id: "r3-3",
     phase: "round3",
     type: "media",
-    text: "Nhan vat lich su nao chi huy chien dich giai phong Sai Gon 1975?",
+    text: "Nhân vật lịch sử nào chỉ huy chiến dịch giải phóng Sài Gòn 1975?",
     media: { kind: "image", url: "" },
     options: [
-      { id: "A", text: "Dai tuong Van Tien Dung" },
-      { id: "B", text: "Dai tuong Vo Nguyen Giap" },
-      { id: "C", text: "Truong Chinh" },
-      { id: "D", text: "Le Duan" },
+      { id: "A", text: "Đại tướng Văn Tiến Dũng" },
+      { id: "B", text: "Đại tướng Võ Nguyên Giáp" },
+      { id: "C", text: "Trường Chinh" },
+      { id: "D", text: "Lê Duẩn" },
     ],
     correctAnswer: "A",
     timeLimit: 20,
@@ -248,10 +248,10 @@ export const ROUND3: Question[] = [
     id: "r3-4",
     phase: "round3",
     type: "media",
-    text: "Nam 1977, Viet Nam tro thanh thanh vien thu 149 cua to chuc quoc te nao?",
+    text: "Năm 1977, Việt Nam trở thành thành viên thứ 149 của tổ chức quốc tế nào?",
     options: [
       { id: "A", text: "ASEAN" },
-      { id: "B", text: "Lien Hop Quoc (UN)" },
+      { id: "B", text: "Liên Hợp Quốc (UN)" },
       { id: "C", text: "WTO" },
       { id: "D", text: "APEC" },
     ],
@@ -261,15 +261,15 @@ export const ROUND3: Question[] = [
   },
 ];
 
-// ---- VONG 4: VE DICH (kho cau hoi - MC chon khi den luot) -------------------
+// ---- VÒNG 4: VỀ ĐÍCH (kho câu hỏi - MC chọn khi đến lượt) -------------------
 export const ROUND4: Question[] = [
   {
     id: "r4-1",
     phase: "round4",
     type: "finish",
-    text: "Neu ngan gon y nghia lich su cua viec thong nhat dat nuoc ve mat nha nuoc nam 1976.",
+    text: "Nêu ngắn gọn ý nghĩa lịch sử của việc thống nhất đất nước về mặt nhà nước năm 1976.",
     correctAnswer:
-      "Tao co so phap ly hoan chinh de thong nhat, phat huy suc manh toan dan toc di len CNXH, nang cao vi the quoc te.",
+      "Tạo cơ sở pháp lý hoàn chỉnh để thống nhất, phát huy sức mạnh toàn dân tộc đi lên CNXH, nâng cao vị thế quốc tế.",
     timeLimit: 30,
     points: 20,
   },
@@ -277,9 +277,9 @@ export const ROUND4: Question[] = [
     id: "r4-2",
     phase: "round4",
     type: "finish",
-    text: "Vi sao noi thong nhat ve mat nha nuoc la yeu cau tat yeu, cap bach sau 1975?",
+    text: "Vì sao nói thống nhất về mặt nhà nước là yêu cầu tất yếu, cấp bách sau 1975?",
     correctAnswer:
-      "Vi mot dat nuoc, mot dan toc nhung ton tai 2 nha nuoc, 2 chinh phu la trai voi nguyen vong; can thong nhat de quan ly va xay dung dat nuoc.",
+      "Vì một đất nước, một dân tộc nhưng tồn tại 2 nhà nước, 2 chính phủ là trái với nguyện vọng; cần thống nhất để quản lý và xây dựng đất nước.",
     timeLimit: 30,
     points: 20,
   },
@@ -287,9 +287,9 @@ export const ROUND4: Question[] = [
     id: "r4-3",
     phase: "round4",
     type: "finish",
-    text: "Ky hop thu nhat Quoc hoi khoa VI (1976) da thong qua nhung quyet dinh quan trong nao?",
+    text: "Kỳ họp thứ nhất Quốc hội khóa VI (1976) đã thông qua những quyết định quan trọng nào?",
     correctAnswer:
-      "Doi ten nuoc thanh CHXHCN Viet Nam; chon Ha Noi la thu do; doi ten Sai Gon-Gia Dinh thanh TP Ho Chi Minh; quy dinh Quoc ky, Quoc huy, Quoc ca.",
+      "Đổi tên nước thành CHXHCN Việt Nam; chọn Hà Nội là thủ đô; đổi tên Sài Gòn-Gia Định thành TP Hồ Chí Minh; quy định Quốc kỳ, Quốc huy, Quốc ca.",
     timeLimit: 30,
     points: 30,
   },
@@ -297,8 +297,8 @@ export const ROUND4: Question[] = [
     id: "r4-4",
     phase: "round4",
     type: "finish",
-    text: "Hoi nghi Hiep thuong chinh tri (11/1975) tai Sai Gon da nhat tri van de gi?",
-    correctAnswer: "Nhat tri hoan toan chu truong, bien phap thong nhat dat nuoc ve mat nha nuoc.",
+    text: "Hội nghị Hiệp thương chính trị (11/1975) tại Sài Gòn đã nhất trí vấn đề gì?",
+    correctAnswer: "Nhất trí hoàn toàn chủ trương, biện pháp thống nhất đất nước về mặt nhà nước.",
     timeLimit: 30,
     points: 20,
   },
@@ -306,9 +306,9 @@ export const ROUND4: Question[] = [
     id: "r4-5",
     phase: "round4",
     type: "finish",
-    text: "Ket qua cuoc Tong tuyen cu ngay 25/4/1976 co y nghia gi?",
+    text: "Kết quả cuộc Tổng tuyển cử ngày 25/4/1976 có ý nghĩa gì?",
     correctAnswer:
-      "Hon 23 trieu cu tri (98,8%) di bau, bau ra 492 dai bieu Quoc hoi chung, the hien y chi thong nhat cua toan dan.",
+      "Hơn 23 triệu cử tri (98,8%) đi bầu, bầu ra 492 đại biểu Quốc hội chung, thể hiện ý chí thống nhất của toàn dân.",
     timeLimit: 30,
     points: 20,
   },

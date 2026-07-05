@@ -7,12 +7,12 @@ import { TIMER_OPTIONS, FINISH_VALUES } from "@vnr/shared";
 import Scoreboard from "../components/Scoreboard";
 
 const PHASES: { phase: Phase; label: string }[] = [
-  { phase: "lobby", label: "Sanh" },
-  { phase: "round1", label: "V1 Khoi dong" },
+  { phase: "lobby", label: "Sảnh" },
+  { phase: "round1", label: "V1 Khởi động" },
   { phase: "round2", label: "V2 CNV" },
-  { phase: "round3", label: "V3 Tang toc" },
-  { phase: "round4", label: "V4 Ve dich" },
-  { phase: "finished", label: "Ket thuc" },
+  { phase: "round3", label: "V3 Tăng tốc" },
+  { phase: "round4", label: "V4 Về đích" },
+  { phase: "finished", label: "Kết thúc" },
 ];
 
 export default function Host() {
@@ -42,13 +42,13 @@ export default function Host() {
         {/* Header */}
         <div className="card flex items-center justify-between !py-3">
           <div>
-            <div className="text-xs text-white/60">MA PHONG</div>
+            <div className="text-xs text-white/60">MÃ PHÒNG</div>
             <div className="text-3xl font-black tracking-widest text-[#ffcd00]">{code}</div>
           </div>
           <div className="text-right">
             <div className="text-sm text-white/60">{phaseLabel(state?.phase ?? "lobby")}</div>
             <div className="text-sm">
-              {state?.players.length ?? 0} nguoi choi ·{" "}
+              {state?.players.length ?? 0} người chơi ·{" "}
               {state?.players.filter((p) => p.connected).length ?? 0} online
             </div>
           </div>
@@ -56,7 +56,7 @@ export default function Host() {
 
         {/* Chon vong */}
         <div className="card">
-          <div className="text-sm font-bold mb-2 text-white/70">CHON VONG THI</div>
+          <div className="text-sm font-bold mb-2 text-white/70">CHỌN VÒNG THI</div>
           <div className="flex flex-wrap gap-2">
             {PHASES.map((p) => (
               <button
@@ -74,10 +74,10 @@ export default function Host() {
         {state && state.phase !== "lobby" && state.phase !== "finished" && (
           <div className="card space-y-3">
             <div className="flex items-center justify-between">
-              <div className="text-sm font-bold text-white/70">DIEU KHIEN CAU HOI</div>
+              <div className="text-sm font-bold text-white/70">ĐIỀU KHIỂN CÂU HỎI</div>
               {q && (
                 <div className="text-sm">
-                  Cau {q.index + 1}/{q.total}
+                  Câu {q.index + 1}/{q.total}
                 </div>
               )}
             </div>
@@ -88,29 +88,29 @@ export default function Host() {
                 className="btn-ghost"
                 onClick={() => emit("host:loadQuestionIndex", { index: (q?.index ?? 0) - 1 })}
               >
-                ◀ Cau truoc
+                ◀ Câu trước
               </button>
               <button className="btn-ghost" onClick={() => emit("host:nextQuestion")}>
-                Cau sau ▶
+                Câu sau ▶
               </button>
               <button className="btn-yellow" onClick={() => emit("host:showQuestion")}>
-                Hien cau hoi
+                Hiện câu hỏi
               </button>
             </div>
 
             {/* AI doc cau hoi (phat tren man hinh trinh chieu) */}
             <div className="flex gap-2 items-center">
-              <span className="text-sm text-white/60">AI doc:</span>
+              <span className="text-sm text-white/60">AI đọc:</span>
               <button className="btn-ghost !px-3 !py-1 text-sm" onClick={() => emit("host:tts", { action: "read" })}>
-                🔊 Doc
+                🔊 Đọc
               </button>
               <button className="btn-ghost !px-3 !py-1 text-sm" onClick={() => emit("host:tts", { action: "read" })}>
-                🔁 Doc lai
+                🔁 Đọc lại
               </button>
               <button className="btn-ghost !px-3 !py-1 text-sm" onClick={() => emit("host:tts", { action: "stop" })}>
-                ⏹ Dung
+                ⏹ Dừng
               </button>
-              <span className="text-xs text-white/40">(phat qua loa man hinh trinh chieu)</span>
+              <span className="text-xs text-white/40">(phát qua loa màn hình trình chiếu)</span>
             </div>
 
             {/* noi dung cau (MC xem, co dap an) */}
@@ -135,14 +135,14 @@ export default function Host() {
                   </div>
                 )}
                 {!q.options && secret?.correctAnswer && (
-                  <div className="text-green-300 text-sm mt-1">Dap an: {secret.correctAnswer}</div>
+                  <div className="text-green-300 text-sm mt-1">Đáp án: {secret.correctAnswer}</div>
                 )}
               </div>
             )}
 
             {/* dong ho */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm text-white/60">Dong ho:</span>
+              <span className="text-sm text-white/60">Đồng hồ:</span>
               {TIMER_OPTIONS.map((s) => (
                 <button
                   key={s}
@@ -153,10 +153,10 @@ export default function Host() {
                 </button>
               ))}
               <button className="btn-ghost !px-3 !py-1 text-sm" onClick={() => emit("host:startTimer", {})}>
-                ▶ Mac dinh
+                ▶ Mặc định
               </button>
               <button className="btn-ghost !px-3 !py-1 text-sm" onClick={() => emit("host:stopTimer")}>
-                ⏸ Dung
+                ⏸ Dừng
               </button>
               <span className="ml-auto text-2xl font-black">{timer.remaining}s</span>
             </div>
@@ -164,10 +164,10 @@ export default function Host() {
             {/* khoa / cong bo */}
             <div className="flex gap-2">
               <button className="btn-ghost" onClick={() => emit("host:lock")}>
-                🔒 Khoa
+                🔒 Khóa
               </button>
               <button className="btn-red" onClick={() => emit("host:reveal")}>
-                Cong bo dap an
+                Công bố đáp án
               </button>
             </div>
           </div>
@@ -176,13 +176,13 @@ export default function Host() {
         {/* Chuong */}
         {state && state.phase !== "lobby" && (
           <div className="card space-y-2">
-            <div className="text-sm font-bold text-white/70">CHUONG</div>
+            <div className="text-sm font-bold text-white/70">CHUÔNG</div>
             <div className="flex gap-2 items-center">
               <button className="btn-yellow" onClick={() => emit("host:openBuzzer")}>
-                🔔 Mo chuong
+                🔔 Mở chuông
               </button>
               <button className="btn-ghost" onClick={() => emit("host:closeBuzzer")}>
-                Dong
+                Đóng
               </button>
               <button className="btn-ghost" onClick={() => emit("host:resetBuzzer")}>
                 Reset
@@ -193,7 +193,7 @@ export default function Host() {
                     className="btn bg-red-600 text-white"
                     onClick={() => emit("host:buzzerWrong")}
                   >
-                    ❌ Sai — mo cho nguoi khac
+                    ❌ Sai — mở cho người khác
                   </button>
                   <span className="ml-auto text-green-300 font-bold">
                     🏆 {state.players.find((p) => p.id === state.buzzer.winnerId)?.name}
@@ -208,26 +208,26 @@ export default function Host() {
         {state?.phase === "round2" && state.obstacle && (
           <div className="card space-y-2">
             <div className="text-sm font-bold text-white/70">
-              CHUONG NGAI VAT: <span className="text-[#ffcd00]">{state.obstacle.keyword}</span>
+              CHƯỚNG NGẠI VẬT: <span className="text-[#ffcd00]">{state.obstacle.keyword}</span>
             </div>
             <div className="grid gap-2">
               {state.obstacle.rows.map((row, i) => (
                 <div key={row.id} className="flex items-center gap-2 text-sm">
                   <span className="flex-1">
-                    Hang {i + 1}: {row.clue} → <b className="text-green-300">{row.answer}</b>
+                    Hàng {i + 1}: {row.clue} → <b className="text-green-300">{row.answer}</b>
                   </span>
                   <button
                     className="btn-ghost !px-3 !py-1"
                     disabled={row.revealed}
                     onClick={() => emit("host:revealRow", { rowId: row.id })}
                   >
-                    {row.revealed ? "Da mo" : "Mo hang"}
+                    {row.revealed ? "Đã mở" : "Mở hàng"}
                   </button>
                 </div>
               ))}
             </div>
             <button className="btn-red w-full" onClick={() => emit("host:revealKeyword")}>
-              Mo chuong ngai vat (tu khoa)
+              Mở chướng ngại vật (từ khóa)
             </button>
           </div>
         )}
@@ -235,7 +235,7 @@ export default function Host() {
         {/* Vong 4: ve dich */}
         {state?.phase === "round4" && state.finish && (
           <div className="card space-y-3">
-            <div className="text-sm font-bold text-white/70">VE DICH - TOP 5</div>
+            <div className="text-sm font-bold text-white/70">VỀ ĐÍCH - TOP 5</div>
             <div className="flex flex-wrap gap-2">
               {state.players
                 .filter((p) => p.inFinalFive)
@@ -250,7 +250,7 @@ export default function Host() {
                 ))}
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm text-white/60">Goi diem:</span>
+              <span className="text-sm text-white/60">Gói điểm:</span>
               {FINISH_VALUES.map((v) => (
                 <button
                   key={v}
@@ -271,10 +271,10 @@ export default function Host() {
                   })
                 }
               >
-                ⭐ Ngoi sao hy vong
+                ⭐ Ngôi sao hy vọng
               </button>
               <button className="btn-ghost !px-3 !py-1 ml-auto" onClick={() => emit("host:openSteal")}>
-                Mo chuong cuop quyen
+                Mở chuông cướp quyền
               </button>
             </div>
           </div>
@@ -283,7 +283,7 @@ export default function Host() {
         {/* Danh sach nguoi choi + cham diem */}
         <div className="card">
           <div className="text-sm font-bold text-white/70 mb-2">
-            NGUOI CHOI (cham diem / dieu chinh)
+            NGƯỜI CHƠI (chấm điểm / điều chỉnh)
           </div>
           <div className="grid md:grid-cols-2 gap-2">
             {state?.players.map((p) => {
@@ -297,14 +297,14 @@ export default function Host() {
                     </div>
                     {ans && (
                       <div className="text-xs text-white/60 truncate">
-                        TL: {ans.answer} ({(ans.timeMs / 1000).toFixed(1)}s)
+                        Trả lời: {ans.answer} ({(ans.timeMs / 1000).toFixed(1)}s)
                       </div>
                     )}
                   </div>
                   <div className="flex gap-1">
                     <button
                       className="btn bg-green-600 !px-2 !py-1 text-sm"
-                      title="Dung"
+                      title="Đúng"
                       onClick={() => emit("host:judge", { playerId: p.id, correct: true })}
                     >
                       ✓
@@ -336,18 +336,18 @@ export default function Host() {
         </div>
 
         <button className="btn-red w-full" onClick={() => emit("host:endGame")}>
-          KET THUC TRAN DAU
+          KẾT THÚC TRẬN ĐẤU
         </button>
       </div>
 
       {/* Cot phai: bang xep hang + link */}
       <div className="space-y-4">
         <div className="card text-sm space-y-1">
-          <div className="font-bold text-white/70">MAN HINH</div>
+          <div className="font-bold text-white/70">MÀN HÌNH</div>
           <a className="text-[#ffcd00] underline" href={`/screen?code=${code}`} target="_blank">
-            Mo man hinh trinh chieu ↗
+            Mở màn hình trình chiếu ↗
           </a>
-          <div className="text-white/50 text-xs">Mo o tab/man hinh khac va chieu len may chieu.</div>
+          <div className="text-white/50 text-xs">Mở ở tab/màn hình khác và chiếu lên máy chiếu.</div>
         </div>
         <Scoreboard players={state?.players ?? []} highlightFinal={state?.phase === "round4"} />
       </div>

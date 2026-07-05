@@ -33,7 +33,7 @@ export function registerHandlers(io: IO, manager: GameManager) {
 
     socket.on("host:resume", ({ code }, cb) => {
       const r = manager.getRoom(code);
-      if (!r) return cb({ ok: false, error: "Phong khong ton tai" });
+      if (!r) return cb({ ok: false, error: "Phòng không tồn tại" });
       meta.code = r.code;
       meta.role = "host";
       r.hostSocketId = socket.id;
@@ -45,8 +45,8 @@ export function registerHandlers(io: IO, manager: GameManager) {
 
     socket.on("player:join", ({ code, name, playerId }, cb) => {
       const r = manager.getRoom(code);
-      if (!r) return cb({ ok: false, error: "Ma phong khong dung" });
-      if (!name?.trim()) return cb({ ok: false, error: "Ten khong duoc trong" });
+      if (!r) return cb({ ok: false, error: "Mã phòng không đúng" });
+      if (!name?.trim()) return cb({ ok: false, error: "Tên không được trống" });
       const pid = playerId || `p_${socket.id}_${Date.now().toString(36)}`;
       meta.code = r.code;
       meta.role = "player";
@@ -59,7 +59,7 @@ export function registerHandlers(io: IO, manager: GameManager) {
 
     socket.on("screen:join", ({ code }, cb) => {
       const r = manager.getRoom(code);
-      if (!r) return cb({ ok: false, error: "Ma phong khong dung" });
+      if (!r) return cb({ ok: false, error: "Mã phòng không đúng" });
       meta.code = r.code;
       meta.role = "screen";
       socket.join(r.code);
