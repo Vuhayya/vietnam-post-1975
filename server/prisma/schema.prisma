@@ -1,0 +1,33 @@
+// Prisma schema - luu lich su tran dau (Phase 3: lich su + thong ke)
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Mot tran dau da ket thuc
+model Match {
+  id        String         @id @default(cuid())
+  code      String
+  startedAt DateTime       @default(now())
+  endedAt   DateTime?
+  winner    String?
+  results   PlayerResult[]
+
+  @@index([startedAt])
+}
+
+// Ket qua tung nguoi choi trong tran
+model PlayerResult {
+  id      String @id @default(cuid())
+  matchId String
+  match   Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  name    String
+  score   Int
+  rank    Int
+
+  @@index([matchId])
+}

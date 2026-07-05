@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: vnr202-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vnr
+      POSTGRES_PASSWORD: vnr_password
+      POSTGRES_DB: vnr202
+    ports:
+      - "5432:5432"
+    volumes:
+      - vnr_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vnr -d vnr202"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  vnr_pgdata:

@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+/* Bang mau chu dao: Do - Vang - Trang (theo doc) */
+@theme {
+  --color-vn-red: #da251d;
+  --color-vn-yellow: #ffcd00;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: radial-gradient(circle at 50% 0%, #7f1d1d 0%, #450a0a 45%, #1a0505 100%);
+  color: #fff;
+  min-height: 100vh;
+}
+
+/* Cac lop tien ich tuy bien (Tailwind v4 dung @utility) */
+@utility btn {
+  @apply px-4 py-2 rounded-lg font-semibold transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed;
+}
+@utility btn-yellow {
+  @apply btn bg-[#ffcd00] text-red-950 hover:brightness-110;
+}
+@utility btn-red {
+  @apply btn bg-[#da251d] text-white hover:brightness-110;
+}
+@utility btn-ghost {
+  @apply btn bg-white/10 text-white hover:bg-white/20;
+}
+@utility card {
+  @apply bg-black/30 backdrop-blur rounded-2xl border border-white/10 p-5;
+}
