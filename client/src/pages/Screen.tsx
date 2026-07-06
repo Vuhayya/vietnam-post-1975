@@ -26,8 +26,9 @@ export default function Screen() {
 
     // Am thanh + AI doc cau hoi (phat tren man hinh trinh chieu)
     const onSound = (d: { name: any }) => playSound(d.name);
-    const onTts = (d: { action: "read" | "stop"; text?: string }) => {
+    const onTts = (d: { action: "read" | "stop"; url?: string; text?: string }) => {
       if (d.action === "stop") tts.stop();
+      else if (d.url) tts.playUrl(d.url);
       else if (d.text) tts.speak(d.text);
     };
     socket.on("sound", onSound);
@@ -92,7 +93,10 @@ export default function Screen() {
 
           {/* Vong 2: chuong ngai vat */}
           {state?.phase === "round2" && state.obstacle ? (
-            <Obstacle data={state.obstacle} />
+            <Obstacle
+              data={state.obstacle}
+              activeRowId={state.questionVisible ? q?.id : undefined}
+            />
           ) : q && state?.questionVisible ? (
             <div className="card flex-1 flex flex-col justify-center">
               <div className="text-sm text-[#ffcd00] mb-2">

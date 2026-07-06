@@ -163,33 +163,38 @@ export const ROUND1: Question[] = [
 // ---- VÒNG 2: VƯỢT CHƯỚNG NGẠI VẬT ------------------------------------------
 export const OBSTACLE: ObstaclePuzzle = {
   id: "obstacle-1",
-  imageUrl: "", // có thể đặt URL ảnh Dinh Độc Lập / Hội trường Thống Nhất
-  keyword: "THỐNG NHẤT",
+  imageUrl: "/images/doi_moi_2.webp", // Sài Gòn xưa (trước Đổi mới)
+  imageUrlAfter: "/images/doi_moi_1.jpg", // Sài Gòn nay (sau Đổi mới)
+  keyword: "ĐỔI MỚI",
   keywordRevealed: false,
   cornersRevealed: [false, false, false, false],
+  centerHint: {
+    clue: "Công cuộc do Đại hội VI (12/1986) khởi xướng, đưa đất nước thoát khỏi khủng hoảng và từng bước chuyển sang cơ chế thị trường có sự quản lý của Nhà nước.",
+    revealed: false,
+  },
   rows: [
     {
       id: "row-1",
-      clue: "Ngày 30/4/1975 là ngày giải phóng hoàn toàn miền... ?",
-      answer: "NAM",
+      clue: "Trong giai đoạn trước năm 1986, nền kinh tế Việt Nam lâm vào tình trạng nghiêm trọng nào, đòi hỏi phải có những quyết sách mang tính bước ngoặt?",
+      answer: "KHỦNG HOẢNG",
       revealed: false,
     },
     {
       id: "row-2",
-      clue: "Tên gọi khác của Dinh Độc Lập ngày nay: Hội trường ... ?",
-      answer: "THỐNG NHẤT",
+      clue: "Đại hội đại biểu toàn quốc lần thứ mấy của Đảng được tổ chức vào tháng 12 năm 1986?",
+      answer: "VI",
       revealed: false,
     },
     {
       id: "row-3",
-      clue: "Thắng lợi 1975 mở ra kỷ nguyên cả nước đi lên chủ nghĩa... ?",
-      answer: "XÃ HỘI",
+      clue: "Cơ chế quản lý kinh tế dựa vào tem phiếu và phân phối theo kế hoạch tập trung trước năm 1986 thường được gọi là gì?",
+      answer: "BAO CẤP",
       revealed: false,
     },
     {
       id: "row-4",
-      clue: "Cuộc Tổng tuyển cử 1976 bầu ra cơ quan quyền lực cao nhất: ... hội ?",
-      answer: "QUỐC",
+      clue: "Sau những quyết sách từ năm 1986, nền kinh tế Việt Nam từng bước vận hành theo cơ chế nào có sự quản lý của Nhà nước?",
+      answer: "THỊ TRƯỜNG",
       revealed: false,
     },
   ],

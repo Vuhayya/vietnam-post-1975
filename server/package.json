@@ -15,6 +15,7 @@
     "@vnr/shared": "*",
     "cors": "^2.8.5",
     "express": "^4.21.2",
+    "msedge-tts": "^2.0.6",
     "nanoid": "^5.0.9",
     "socket.io": "^4.8.1"
   },

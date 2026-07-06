@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { socket } from "../socket";
 import { useRoom, phaseLabel } from "../lib/useRoom";
@@ -23,6 +23,10 @@ export default function Player() {
     const rejoin = () =>
       socket.emit("player:join", { code, name, playerId: playerId || undefined }, (res) => {
         if (res.ok && res.playerId) localStorage.setItem("vnr_playerId", res.playerId);
+        if (res.ok && res.currentAnswer !== undefined) {
+          setMyAnswer(res.currentAnswer);
+          setTextAnswer(res.currentAnswer);
+        }
       });
     rejoin();
     socket.on("connect", rejoin);
@@ -40,14 +44,21 @@ export default function Player() {
     [state, playerId]
   );
 
-  // reset lua chon khi doi cau
+  // reset lua chon khi thuc su sang cau hoi khac (khong reset luc dong bo lan dau /
+  // khi rejoin, va khong reset khi MC cong bo dap an - de con hien thi dung/sai)
+  const lastQuestionId = useRef<string | null>(null);
   useEffect(() => {
-    setMyAnswer("");
-    setTextAnswer("");
-  }, [state?.question?.id, state?.revealed]);
+    const qId = state?.question?.id ?? null;
+    if (lastQuestionId.current !== null && qId !== lastQuestionId.current) {
+      setMyAnswer("");
+      setTextAnswer("");
+    }
+    lastQuestionId.current = qId;
+  }, [state?.question?.id]);
 
   const q = state?.question;
-  const canAnswer = state?.questionVisible && !state?.revealed && !me?.answered && timer.running;
+  // Nguoi choi co the bam lai de doi dap an cho toi khi het gio / MC cong bo dap an.
+  const canAnswer = state?.questionVisible && !state?.revealed && timer.running;
 
   const answer = (val: string) => {
     if (!canAnswer) return;
@@ -164,7 +175,9 @@ export default function Player() {
           )}
 
           {me?.answered && !state.revealed && (
-            <div className="text-center text-green-300 text-sm">Đã gửi đáp án. Chờ kết quả...</div>
+            <div className="text-center text-green-300 text-sm">
+              {canAnswer ? "Đã chọn đáp án. Bạn có thể bấm lại để đổi." : "Đã chốt đáp án. Chờ kết quả..."}
+            </div>
           )}
           {state.revealed && me?.lastCorrect !== undefined && (
             <div

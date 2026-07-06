@@ -54,7 +54,7 @@ export function registerHandlers(io: IO, manager: GameManager) {
       socket.join(r.code);
       socket.join(`${r.code}:players`);
       r.addPlayer(pid, name.trim(), socket.id);
-      cb({ ok: true, playerId: pid });
+      cb({ ok: true, playerId: pid, currentAnswer: r.getCurrentAnswer(pid) });
     });
 
     socket.on("screen:join", ({ code }, cb) => {
@@ -78,7 +78,12 @@ export function registerHandlers(io: IO, manager: GameManager) {
     socket.on("host:showQuestion", hostOnly(() => room()!.showQuestion()));
     socket.on("host:nextQuestion", hostOnly(() => room()!.nextQuestion()));
     socket.on("host:loadQuestionIndex", ({ index }) => isHost() && room()?.loadQuestionIndex(index));
-    socket.on("host:startTimer", ({ seconds }) => isHost() && room()?.startTimer(seconds));
+    socket.on("host:startTimer", ({ seconds }) => {
+      if (!isHost()) return;
+      const r = room();
+      if (!r) return;
+      r.setTimerDuration(seconds ?? r.current?.timeLimit ?? 30);
+    });
     socket.on("host:stopTimer", hostOnly(() => room()!.stopTimer()));
     socket.on("host:lock", hostOnly(() => room()!.lock()));
     socket.on("host:reveal", hostOnly(() => room()!.reveal()));
@@ -108,10 +113,11 @@ export function registerHandlers(io: IO, manager: GameManager) {
       if (meta.role === "player" && meta.playerId) room()?.submitAnswer(meta.playerId, answer);
     });
 
-    // ---- vong 2 ----------------------------------------------------------
-    socket.on("host:revealRow", ({ rowId }) => isHost() && room()?.revealRow(rowId));
-    socket.on("host:revealCorner", ({ corner }) => isHost() && room()?.revealCorner(corner));
+    // ---- vong 2 ------------------------------------------------------------
+    socket.on("host:selectObstacleRow", ({ rowId }) => isHost() && room()?.selectObstacleRow(rowId));
+    socket.on("host:revealCenterHint", hostOnly(() => room()!.revealCenterHint()));
     socket.on("host:revealKeyword", hostOnly(() => room()!.revealKeyword()));
+    socket.on("host:judgeKeyword", ({ playerId }) => isHost() && room()?.judgeKeyword(playerId));
 
     // ---- vong 4 ----------------------------------------------------------
     socket.on("host:selectFinishPlayer", ({ playerId }) =>

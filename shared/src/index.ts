@@ -46,16 +46,45 @@ export interface ObstacleRow {
   id: string;
   clue: string; // cau hoi hang ngang (goi y)
   answer: string; // dap an hang ngang
-  revealed: boolean; // MC da mo hang nay chua
+  revealed: boolean; // da tra loi dung / MC da cong bo dap an chua
+}
+
+export interface ObstacleCenterHint {
+  clue: string; // goi y cho manh ghep thu 5 (o trung tam), doc sau khi het 4 hang ngang
+  revealed: boolean;
 }
 
 export interface ObstaclePuzzle {
   id: string;
-  imageUrl: string; // buc anh bi che 4 manh
+  imageUrl: string; // buc anh bi che 4 manh (nua trai neu co imageUrlAfter)
+  imageUrlAfter?: string; // anh nua phai (doi lap voi imageUrl) - vd truoc/sau doi moi
   keyword: string; // tu khoa trung tam (chuong ngai vat)
   rows: ObstacleRow[]; // 4 hang ngang, moi hang mo 1 manh anh
+  centerHint: ObstacleCenterHint; // manh ghep thu 5
   keywordRevealed: boolean;
   cornersRevealed: boolean[]; // 4 goc anh da lat chua
+}
+
+// ---- Ban rut gon gui cho nguoi choi/man hinh (an dap an chua mo, kem do dai) ----
+export interface PublicObstacleRow {
+  id: string;
+  clue: string;
+  answer: string; // "" neu chua revealed (an dap an voi nguoi choi)
+  answerLength: number; // luon dung, de ve o chu trong
+  revealed: boolean;
+}
+
+export interface PublicObstacle {
+  id: string;
+  imageUrl: string;
+  imageUrlAfter?: string;
+  keyword: string; // "" neu chua keywordRevealed
+  keywordLength: number;
+  rows: PublicObstacleRow[];
+  centerHint: ObstacleCenterHint;
+  keywordRevealed: boolean;
+  cornersRevealed: boolean[];
+  keywordBuzzValue: number; // diem neu bam chuong dung tu khoa luc nay (80/40/20, 0 = chua duoc bam)
 }
 
 // ---- Nguoi choi ------------------------------------------------------------
@@ -107,11 +136,12 @@ export interface RoomStateSnapshot {
   players: Player[];
   question: PublicQuestion | null;
   questionVisible: boolean; // MC da show cau hoi len chua
+  selectedDuration: number; // thoi gian MC dang chon (dung khi bam "Hien cau hoi")
   timer: { running: boolean; remaining: number; duration: number };
   buzzer: BuzzerState;
   revealed: boolean; // da cong bo dap an chua
   revealedAnswer: string | null; // dap an (chi co khi revealed = true)
-  obstacle: ObstaclePuzzle | null; // vong 2
+  obstacle: PublicObstacle | null; // vong 2
   finish: FinishState | null; // vong 4
   answeredCount: number; // bao nhieu nguoi da tra loi
 }
@@ -130,7 +160,7 @@ export interface ClientToServerEvents {
   "host:create": (cb: (res: { code: string }) => void) => void;
   "player:join": (
     data: { code: string; name: string; playerId?: string },
-    cb: (res: { ok: boolean; playerId?: string; error?: string }) => void
+    cb: (res: { ok: boolean; playerId?: string; error?: string; currentAnswer?: string }) => void
   ) => void;
   "screen:join": (data: { code: string }, cb: (res: { ok: boolean; error?: string }) => void) => void;
   "host:resume": (data: { code: string }, cb: (res: { ok: boolean; error?: string }) => void) => void;
@@ -159,9 +189,10 @@ export interface ClientToServerEvents {
   "player:answer": (data: { answer: string }) => void;
 
   // --- vong 2: chuong ngai vat ---
-  "host:revealRow": (data: { rowId: string }) => void;
-  "host:revealKeyword": () => void;
-  "host:revealCorner": (data: { corner: number }) => void;
+  "host:selectObstacleRow": (data: { rowId: string }) => void; // MC chon hang + hien cau hoi hang do
+  "host:revealCenterHint": () => void; // mo goi y manh ghep thu 5 (khong tinh diem)
+  "host:revealKeyword": () => void; // MC tu cong bo tu khoa (bo cuoc / het gio)
+  "host:judgeKeyword": (data: { playerId: string }) => void; // nguoi thang chuong doan dung tu khoa
 
   // --- vong 4: ve dich ---
   "host:selectFinishPlayer": (data: { playerId: string }) => void;
@@ -178,7 +209,7 @@ export interface ServerToClientEvents {
   buzz: (data: { playerId: string; name: string }) => void;
   timer: (data: { remaining: number; duration: number; running: boolean }) => void;
   sound: (data: { name: SoundName }) => void;
-  tts: (data: { action: "read" | "stop"; text?: string }) => void;
+  tts: (data: { action: "read" | "stop"; url?: string; text?: string }) => void;
   toast: (data: { message: string; kind?: "info" | "success" | "error" }) => void;
 }
 

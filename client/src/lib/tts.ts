@@ -1,18 +1,26 @@
-// AI doc cau hoi bang Web Speech API (mien phi, co san trong trinh duyet).
-// Uu tien giong tieng Viet (vi-VN).
+// AI doc cau hoi: uu tien phat file mp3 giong Edge TTS (server tao san, tu nhien nhu MC that).
+// Du phong bang giong Web Speech API cua trinh duyet neu server khong tao duoc audio (vd mat mang).
+import { SERVER_URL } from "./api";
 
+let audioEl: HTMLAudioElement | null = null;
+function getAudioEl(): HTMLAudioElement {
+  if (!audioEl) {
+    audioEl = new Audio();
+    audioEl.preload = "auto";
+  }
+  return audioEl;
+}
+
+// --- du phong: giong may cua trinh duyet ---
 let voices: SpeechSynthesisVoice[] = [];
-
 function loadVoices() {
   if (typeof window === "undefined" || !window.speechSynthesis) return;
   voices = window.speechSynthesis.getVoices();
 }
-
 if (typeof window !== "undefined" && window.speechSynthesis) {
   loadVoices();
   window.speechSynthesis.onvoiceschanged = loadVoices;
 }
-
 function pickVietnameseVoice(): SpeechSynthesisVoice | undefined {
   if (voices.length === 0) loadVoices();
   return (
@@ -20,35 +28,50 @@ function pickVietnameseVoice(): SpeechSynthesisVoice | undefined {
     voices.find((v) => v.lang?.toLowerCase().includes("vn"))
   );
 }
+function speakBrowser(text: string) {
+  if (typeof window === "undefined" || !window.speechSynthesis || !text) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const v = pickVietnameseVoice();
+  if (v) u.voice = v;
+  u.lang = v?.lang ?? "vi-VN";
+  u.rate = 0.95;
+  window.speechSynthesis.speak(u);
+}
 
 export const tts = {
-  supported(): boolean {
-    return typeof window !== "undefined" && !!window.speechSynthesis;
+  /** Phat file mp3 do server tao (duong dan tuong doi, vd /api/tts/xyz.mp3). */
+  playUrl(path: string) {
+    if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel();
+    const el = getAudioEl();
+    el.src = `${SERVER_URL}${path}`;
+    el.play().catch((err) => console.warn("Không phát được audio TTS:", err));
   },
 
-  speak(text: string, onEnd?: () => void) {
-    if (!this.supported() || !text) return;
-    window.speechSynthesis.cancel(); // dung cau dang doc
-    const u = new SpeechSynthesisUtterance(text);
-    const v = pickVietnameseVoice();
-    if (v) u.voice = v;
-    u.lang = v?.lang ?? "vi-VN";
-    u.rate = 0.95; // doc cham lai chut cho ro
-    u.pitch = 1;
-    if (onEnd) u.onend = onEnd;
-    window.speechSynthesis.speak(u);
+  /** Du phong khi server khong tao duoc audio. */
+  speak(text: string) {
+    speakBrowser(text);
   },
 
   stop() {
-    if (this.supported()) window.speechSynthesis.cancel();
+    const el = getAudioEl();
+    el.pause();
+    el.currentTime = 0;
+    if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel();
   },
 
-  /** "Danh thuc" TTS sau tuong tac nguoi dung (chinh sach autoplay). */
+  /** "Danh thuc" audio sau tuong tac nguoi dung dau tien (chinh sach autoplay). */
   warmup() {
-    if (!this.supported()) return;
-    const u = new SpeechSynthesisUtterance("");
-    window.speechSynthesis.speak(u);
-    window.speechSynthesis.cancel();
+    const el = getAudioEl();
+    el.muted = true;
+    el.play().catch(() => {});
+    el.pause();
+    el.muted = false;
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      const u = new SpeechSynthesisUtterance("");
+      window.speechSynthesis.speak(u);
+      window.speechSynthesis.cancel();
+    }
     loadVoices();
   },
 };

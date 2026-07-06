@@ -11,6 +11,7 @@ import { GameManager } from "./game/GameManager.js";
 import { registerHandlers } from "./socket/handlers.js";
 import { initDb } from "./db/prisma.js";
 import { getHistory } from "./db/history.js";
+import { getCachedAudio } from "./tts/edgeTts.js";
 
 const PORT = Number(process.env.PORT ?? 4000);
 const app = express();
@@ -22,6 +23,15 @@ app.get("/health", (_req, res) => res.json({ ok: true, service: "vnr202-challeng
 // Lich su cac tran dau (Phase 3: lich su + thong ke)
 app.get("/api/history", async (_req, res) => {
   res.json(await getHistory());
+});
+
+// File mp3 do Edge TTS tao ra (AI doc cau hoi tren man hinh trinh chieu)
+app.get("/api/tts/:id.mp3", (req, res) => {
+  const buf = getCachedAudio(req.params.id);
+  if (!buf) return res.status(404).end();
+  res.setHeader("Content-Type", "audio/mpeg");
+  res.setHeader("Cache-Control", "public, max-age=3600");
+  res.send(buf);
 });
 
 // --- Production: phuc vu luon ban build cua client (chay 1 tien trinh) -------

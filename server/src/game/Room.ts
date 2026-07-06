@@ -8,12 +8,14 @@ import type {
   Question,
   RoomStateSnapshot,
   ObstaclePuzzle,
+  PublicObstacle,
   FinishState,
   BuzzerState,
   SoundName,
 } from "@vnr/shared";
 import { ROUND1, ROUND3, ROUND4, OBSTACLE } from "../data/questions.js";
 import { scoreRound1, scoreRound3, isCorrect } from "./scoring.js";
+import { synthesize } from "../tts/edgeTts.js";
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents>;
 
@@ -42,6 +44,8 @@ export class Room {
 
   // dong ho
   timer = { running: false, remaining: 0, duration: 0 };
+  // thoi gian MC da chon truoc khi bam "Hien cau hoi" (null = dung mac dinh cua cau)
+  selectedDuration: number | null = null;
   private timerHandle: NodeJS.Timeout | null = null;
   private questionStartAt = 0;
 
@@ -123,6 +127,7 @@ export class Room {
     this.resetTimer();
     this.resetBuzzer();
     this.answers.clear();
+    this.selectedDuration = null;
     for (const p of this.players.values()) {
       p.answered = false;
       p.lastCorrect = undefined;
@@ -136,6 +141,15 @@ export class Room {
     } else this.questionList = [];
 
     if (phase === "round2") this.obstacle = structuredClone(OBSTACLE);
+
+    // Nap san cau dau tien de MC thay ngay noi dung, khong can bam "Cau sau".
+    // Nguoi choi van khong thay gi cho toi khi MC bam "Hien cau hoi" (xem broadcast()).
+    if (this.questionList.length > 0) {
+      this.questionIndex = 0;
+      this.current = this.questionList[0];
+      this.prewarmTts();
+    }
+
     this.broadcast();
   }
 
@@ -165,12 +179,14 @@ export class Room {
     this.questionVisible = false;
     this.revealed = false;
     this.answers.clear();
+    // Khong reset selectedDuration: thoi gian MC da chon se ap dung cho ca cau tiep theo.
     for (const p of this.players.values()) {
       p.answered = false;
       p.lastCorrect = undefined;
     }
     this.resetTimer();
     this.resetBuzzer();
+    this.prewarmTts();
     this.broadcast();
   }
 
@@ -182,7 +198,20 @@ export class Room {
     if (!this.current) return;
     this.questionVisible = true;
     this.sound("reveal");
-    this.broadcast();
+    // Bam gio ngay khi hien cau hoi, dung thoi gian MC da chon truoc do
+    // (hoac thoi gian mac dinh cua cau neu MC chua chon).
+    this.startTimer(this.selectedDuration ?? this.current.timeLimit);
+  }
+
+  // MC chon truoc thoi gian se dung (truoc khi hien cau hoi thi chi luu lua chon;
+  // neu cau da dang hien thi thi bam gio lai ngay voi thoi gian moi).
+  setTimerDuration(seconds: number) {
+    this.selectedDuration = seconds;
+    if (this.questionVisible && !this.revealed) {
+      this.startTimer(seconds);
+    } else {
+      this.broadcast();
+    }
   }
 
   // -- dong ho -----------------------------------------------------------
@@ -235,19 +264,27 @@ export class Room {
     this.broadcast();
   }
 
-  // -- tra loi -----------------------------------------------------------
+  // -- tra loi -------------------------------------------------------------
+  // Nguoi choi co the doi dap an nhieu lan cho toi khi het gio / cong bo dap an
+  // (diem toc do vong 3 tinh theo lan chon cuoi cung).
   submitAnswer(playerId: string, answer: string) {
     if (!this.current || !this.questionVisible || this.revealed) return;
     if (!this.timer.running && this.timer.duration > 0 && this.timer.remaining === 0) return;
     const p = this.players.get(playerId);
-    if (!p || p.answered) return;
+    if (!p) return;
     const timeMs = this.questionStartAt ? Date.now() - this.questionStartAt : 0;
     this.answers.set(playerId, { answer, timeMs });
     p.answered = true;
     this.broadcast();
   }
 
-  // -- cong bo dap an + cham diem tu dong (vong 1 & 3) -------------------
+  // dap an hien tai cua 1 nguoi choi cho cau dang hien thi (de dong bo lai khi ho reconnect)
+  getCurrentAnswer(playerId: string): string | undefined {
+    if (!this.questionVisible || this.revealed) return undefined;
+    return this.answers.get(playerId)?.answer;
+  }
+
+  // -- cong bo dap an + cham diem tu dong (vong 1, 2 hang ngang & 3) -------
   reveal() {
     if (!this.current) return;
     this.revealed = true;
@@ -264,6 +301,21 @@ export class Room {
             ? scoreRound1(q, ok)
             : scoreRound3(q, ok, this.timer.remaining, this.timer.duration);
         p.score += gained;
+      }
+    } else if (this.phase === "round2") {
+      // Hang ngang: diem bang nhau cho tat ca nguoi tra loi dung (khong thuong toc do).
+      for (const [playerId, rec] of this.answers) {
+        const p = this.players.get(playerId);
+        if (!p) continue;
+        const ok = isCorrect(rec.answer, q.correctAnswer);
+        p.lastCorrect = ok;
+        if (ok) p.score += q.points;
+      }
+      const row = this.obstacle.rows.find((r) => r.id === q.id);
+      if (row) {
+        row.revealed = true;
+        const idx = this.obstacle.rows.indexOf(row);
+        if (idx >= 0 && idx < 4) this.obstacle.cornersRevealed[idx] = true;
       }
     }
     this.sound("reveal");
@@ -322,32 +374,84 @@ export class Room {
     if (this.finish) this.finish.stealerId = playerId;
     this.broadcast();
   }
-  /** MC bao nguoi thang chuong tra loi SAI -> mo chuong cho nguoi khac */
+  /** MC bao nguoi thang chuong tra loi SAI -> mo chuong cho nguoi khac.
+   * Vong 2: nguoi nay bi khoa VINH VIEN cho toi het vong (lockedOut khong bi xoa
+   * cho toi khi sang hang/vong khac), dung nhu luat "tuoc quyen tham gia". */
   buzzerWrong() {
     const wid = this.buzzer.winnerId;
-    if (wid) this.buzzer.lockedOut.push(wid);
+    if (wid) {
+      this.buzzer.lockedOut.push(wid);
+      const p = this.players.get(wid);
+      if (p) p.lastCorrect = false;
+    }
     this.buzzer.winnerId = null;
     this.buzzer.open = true;
     this.sound("wrong");
     this.broadcast();
   }
 
-  // -- vong 2: chuong ngai vat ------------------------------------------
-  revealRow(rowId: string) {
+  // -- vong 2: chuong ngai vat -----------------------------------------------
+  /** MC chon 1 hang ngang chua mo -> hien thi nhu 1 cau hoi (dung chung flow
+   * "Hien cau hoi -> dem gio -> Cong bo dap an" cua vong 1/3/4). */
+  selectObstacleRow(rowId: string) {
+    if (this.phase !== "round2") return;
     const row = this.obstacle.rows.find((r) => r.id === rowId);
-    if (row) {
-      row.revealed = true;
-      const idx = this.obstacle.rows.indexOf(row);
-      if (idx >= 0 && idx < 4) this.obstacle.cornersRevealed[idx] = true;
-      this.sound("correct");
+    if (!row || row.revealed) return;
+    this.current = {
+      id: row.id,
+      phase: "round2",
+      type: "obstacle",
+      text: row.clue,
+      correctAnswer: row.answer,
+      timeLimit: 15,
+      points: 10,
+    };
+    this.questionIndex = this.obstacle.rows.indexOf(row);
+    this.questionVisible = false;
+    this.revealed = false;
+    this.answers.clear();
+    this.selectedDuration = null;
+    for (const p of this.players.values()) {
+      p.answered = false;
+      p.lastCorrect = undefined;
     }
+    this.resetTimer();
+    this.prewarmTts();
     this.broadcast();
   }
-  revealCorner(corner: number) {
-    if (corner >= 0 && corner < 4) this.obstacle.cornersRevealed[corner] = true;
+
+  /** Mo goi y manh ghep thu 5 (o trung tam) - khong tinh diem hang ngang,
+   * chi tang du kien doan tu khoa. Tu do ve sau bam chuong dung tu khoa = 20d. */
+  revealCenterHint() {
+    if (this.obstacle.centerHint.revealed) return;
+    this.obstacle.centerHint.revealed = true;
+    this.sound("reveal");
     this.broadcast();
   }
+
   revealKeyword() {
+    this.obstacle.keywordRevealed = true;
+    this.obstacle.cornersRevealed = [true, true, true, true];
+    this.sound("victory");
+    this.broadcast();
+  }
+
+  /** Diem neu bam chuong dung tu khoa NGAY LUC NAY: 80 (sau hang 1) / 40 (tu hang 2
+   * den truoc goi y trung tam) / 20 (sau khi mo goi y trung tam) / 0 (chua du dieu kien). */
+  private keywordBuzzValue(): number {
+    if (this.obstacle.centerHint.revealed) return 20;
+    const revealedRows = this.obstacle.rows.filter((r) => r.revealed).length;
+    if (revealedRows >= 2) return 40;
+    if (revealedRows >= 1) return 80;
+    return 0;
+  }
+
+  /** Nguoi thang chuong doan DUNG tu khoa: cong diem theo moc hien tai. */
+  judgeKeyword(playerId: string) {
+    const p = this.players.get(playerId);
+    if (!p) return;
+    p.score += this.keywordBuzzValue();
+    p.lastCorrect = true;
     this.obstacle.keywordRevealed = true;
     this.obstacle.cornersRevealed = [true, true, true, true];
     this.sound("victory");
@@ -377,11 +481,26 @@ export class Room {
     this.openBuzzer();
   }
 
-  // -- AI doc cau hoi ----------------------------------------------------
-  ttsRead() {
+  // -- AI doc cau hoi ------------------------------------------------------
+  /** Tao truoc audio ngay khi cau hoi duoc nap (chua can bam "Doc"), de luc MC
+   * bam "Doc" thi da co san trong cache cua synthesize() -> phat gan nhu tuc thi. */
+  private prewarmTts() {
     const text = this.current?.text;
     if (!text) return;
-    this.roomAll().emit("tts", { action: "read", text });
+    synthesize(text).catch((err) => {
+      console.error("Loi prewarm Edge TTS:", err);
+    });
+  }
+  async ttsRead() {
+    const text = this.current?.text;
+    if (!text) return;
+    try {
+      const id = await synthesize(text);
+      this.roomAll().emit("tts", { action: "read", url: `/api/tts/${id}.mp3` });
+    } catch (err) {
+      console.error("Loi tao giong Edge TTS, dung giong trinh duyet du phong:", err);
+      this.roomAll().emit("tts", { action: "read", text });
+    }
   }
   ttsStop() {
     this.roomAll().emit("tts", { action: "stop" });
@@ -406,7 +525,51 @@ export class Room {
       points: this.current.points,
       media: this.current.media,
       index: this.questionIndex,
-      total: this.questionList.length,
+      total: this.phase === "round2" ? this.obstacle.rows.length : this.questionList.length,
+    };
+  }
+
+  /** Ban day du (dung cho host/man hinh) kem do dai chu + diem bam chuong hien tai. */
+  private decoratedObstacle(): PublicObstacle {
+    const o = this.obstacle;
+    return {
+      id: o.id,
+      imageUrl: o.imageUrl,
+      imageUrlAfter: o.imageUrlAfter,
+      keyword: o.keyword,
+      keywordLength: o.keyword.replace(/\s+/g, "").length,
+      rows: o.rows.map((r) => ({
+        id: r.id,
+        clue: r.clue,
+        answer: r.answer,
+        answerLength: r.answer.replace(/\s+/g, "").length,
+        revealed: r.revealed,
+      })),
+      centerHint: { ...o.centerHint },
+      keywordRevealed: o.keywordRevealed,
+      cornersRevealed: [...o.cornersRevealed],
+      keywordBuzzValue: this.keywordBuzzValue(),
+    };
+  }
+
+  /** An dap an/tu khoa chua mo (chi gui do dai) - dung cho nguoi choi, chong xem truoc. */
+  private redactObstacleForPlayers(o: PublicObstacle): PublicObstacle {
+    return {
+      ...o,
+      keyword: o.keywordRevealed ? o.keyword : "",
+      rows: o.rows.map((r) => ({ ...r, answer: r.revealed ? r.answer : "" })),
+    };
+  }
+
+  /** An cau hoi (clue) cua hang chua duoc MC bam "Hien cau hoi" - dung cho man hinh
+   * trinh chieu/nguoi choi, chi lo clue khi hang da mo hoac dang la hang dang hien. */
+  private redactObstacleCluesForDisplay(o: PublicObstacle): PublicObstacle {
+    return {
+      ...o,
+      rows: o.rows.map((r) => ({
+        ...r,
+        clue: r.revealed || (this.questionVisible && this.current?.id === r.id) ? r.clue : "",
+      })),
     };
   }
 
@@ -419,11 +582,12 @@ export class Room {
         .sort((a, b) => b.score - a.score),
       question: this.publicQuestion(),
       questionVisible: this.questionVisible,
+      selectedDuration: this.selectedDuration ?? this.current?.timeLimit ?? 30,
       timer: { ...this.timer },
       buzzer: { ...this.buzzer },
       revealed: this.revealed,
       revealedAnswer: this.revealed ? this.current?.correctAnswer ?? null : null,
-      obstacle: this.phase === "round2" ? this.obstacle : null,
+      obstacle: this.phase === "round2" ? this.decoratedObstacle() : null,
       finish: this.finish,
       answeredCount: this.answers.size,
     };
@@ -432,13 +596,21 @@ export class Room {
   broadcast() {
     const full = this.snapshot();
     // Nguoi choi CHI nhan cau hoi khi MC da hien len (chong xem truoc/gian lan).
-    // Dap an dung khong bao gio nam trong snapshot cho nguoi choi.
+    // Dap an dung (ca hang ngang/tu khoa vong 2) khong bao gio nam trong snapshot cho nguoi choi.
     const playerSnap: RoomStateSnapshot = {
       ...full,
       question: this.questionVisible ? full.question : null,
+      obstacle: full.obstacle
+        ? this.redactObstacleCluesForDisplay(this.redactObstacleForPlayers(full.obstacle))
+        : null,
+    };
+    // Man hinh trinh chieu: chi lo clue cua hang MC da bam "Hien cau hoi" (hoac da mo).
+    const screenSnap: RoomStateSnapshot = {
+      ...full,
+      obstacle: full.obstacle ? this.redactObstacleCluesForDisplay(full.obstacle) : null,
     };
     this.io.to(`${this.code}:host`).emit("state", full);
-    this.io.to(`${this.code}:screen`).emit("state", full);
+    this.io.to(`${this.code}:screen`).emit("state", screenSnap);
     this.io.to(`${this.code}:players`).emit("state", playerSnap);
 
     if (this.hostSocketId) {

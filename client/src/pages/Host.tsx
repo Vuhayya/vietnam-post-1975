@@ -82,17 +82,21 @@ export default function Host() {
               )}
             </div>
 
-            {/* dieu huong cau */}
+            {/* dieu huong cau (vong 2 chon hang ngang o panel rieng ben duoi) */}
             <div className="flex gap-2">
-              <button
-                className="btn-ghost"
-                onClick={() => emit("host:loadQuestionIndex", { index: (q?.index ?? 0) - 1 })}
-              >
-                ◀ Câu trước
-              </button>
-              <button className="btn-ghost" onClick={() => emit("host:nextQuestion")}>
-                Câu sau ▶
-              </button>
+              {state.phase !== "round2" && (
+                <>
+                  <button
+                    className="btn-ghost"
+                    onClick={() => emit("host:loadQuestionIndex", { index: (q?.index ?? 0) - 1 })}
+                  >
+                    ◀ Câu trước
+                  </button>
+                  <button className="btn-ghost" onClick={() => emit("host:nextQuestion")}>
+                    Câu sau ▶
+                  </button>
+                </>
+              )}
               <button className="btn-yellow" onClick={() => emit("host:showQuestion")}>
                 Hiện câu hỏi
               </button>
@@ -146,13 +150,24 @@ export default function Host() {
               {TIMER_OPTIONS.map((s) => (
                 <button
                   key={s}
-                  className="btn-ghost !px-3 !py-1 text-sm"
+                  className={
+                    state?.selectedDuration === s
+                      ? "btn-yellow !px-3 !py-1 text-sm"
+                      : "btn-ghost !px-3 !py-1 text-sm"
+                  }
                   onClick={() => emit("host:startTimer", { seconds: s })}
                 >
                   {s}s
                 </button>
               ))}
-              <button className="btn-ghost !px-3 !py-1 text-sm" onClick={() => emit("host:startTimer", {})}>
+              <button
+                className={
+                  q && state?.selectedDuration === q.timeLimit
+                    ? "btn-yellow !px-3 !py-1 text-sm"
+                    : "btn-ghost !px-3 !py-1 text-sm"
+                }
+                onClick={() => emit("host:startTimer", {})}
+              >
                 ▶ Mặc định
               </button>
               <button className="btn-ghost !px-3 !py-1 text-sm" onClick={() => emit("host:stopTimer")}>
@@ -189,11 +204,19 @@ export default function Host() {
               </button>
               {state.buzzer.winnerId && (
                 <>
+                  {state.phase === "round2" && (
+                    <button
+                      className="btn bg-green-600 text-white"
+                      onClick={() => emit("host:judgeKeyword", { playerId: state.buzzer.winnerId! })}
+                    >
+                      ✓ Đúng (+{state.obstacle?.keywordBuzzValue ?? 0}đ)
+                    </button>
+                  )}
                   <button
                     className="btn bg-red-600 text-white"
                     onClick={() => emit("host:buzzerWrong")}
                   >
-                    ❌ Sai — mở cho người khác
+                    ❌ Sai — {state.phase === "round2" ? "loại khỏi phần thi này" : "mở cho người khác"}
                   </button>
                   <span className="ml-auto text-green-300 font-bold">
                     🏆 {state.players.find((p) => p.id === state.buzzer.winnerId)?.name}
@@ -206,28 +229,66 @@ export default function Host() {
 
         {/* Vong 2: chuong ngai vat */}
         {state?.phase === "round2" && state.obstacle && (
-          <div className="card space-y-2">
-            <div className="text-sm font-bold text-white/70">
-              CHƯỚNG NGẠI VẬT: <span className="text-[#ffcd00]">{state.obstacle.keyword}</span>
+          <div className="card space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-bold text-white/70">
+                CHƯỚNG NGẠI VẬT:{" "}
+                <span className="text-[#ffcd00]">
+                  {state.obstacle.keywordRevealed ? state.obstacle.keyword : `(${state.obstacle.keywordLength} chữ cái)`}
+                </span>
+              </div>
+              <div className="text-xs text-white/60">
+                Bấm chuông đúng từ khóa lúc này:{" "}
+                <b className="text-[#ffcd00]">{state.obstacle.keywordBuzzValue}đ</b>
+              </div>
             </div>
+
+            {/* 4 hang ngang: bam de chon + hien cau hoi hang do (dung chung dong ho o tren) */}
             <div className="grid gap-2">
               {state.obstacle.rows.map((row, i) => (
-                <div key={row.id} className="flex items-center gap-2 text-sm">
+                <div
+                  key={row.id}
+                  className={`flex items-center gap-2 text-sm rounded-lg px-3 py-2 border ${
+                    row.revealed ? "bg-green-600/20 border-green-500/40" : "bg-white/5 border-white/10"
+                  } ${q?.id === row.id ? "ring-2 ring-[#ffcd00]" : ""}`}
+                >
                   <span className="flex-1">
-                    Hàng {i + 1}: {row.clue} → <b className="text-green-300">{row.answer}</b>
+                    Hàng {i + 1}: {row.clue}
+                    {row.revealed && <> → <b className="text-green-300">{row.answer}</b></>}
                   </span>
                   <button
                     className="btn-ghost !px-3 !py-1"
                     disabled={row.revealed}
-                    onClick={() => emit("host:revealRow", { rowId: row.id })}
+                    onClick={() => emit("host:selectObstacleRow", { rowId: row.id })}
                   >
-                    {row.revealed ? "Đã mở" : "Mở hàng"}
+                    {row.revealed ? "Đã mở" : q?.id === row.id ? "Đang chọn" : "Chọn hàng này"}
                   </button>
                 </div>
               ))}
             </div>
+
+            {/* manh ghep thu 5: goi y trung tam, khong tinh diem hang ngang */}
+            <div
+              className={`rounded-lg px-3 py-2 border text-sm ${
+                state.obstacle.centerHint.revealed
+                  ? "bg-green-600/20 border-green-500/40"
+                  : "bg-white/5 border-white/10"
+              }`}
+            >
+              {state.obstacle.centerHint.revealed ? (
+                <>
+                  <span className="text-white/60">Gợi ý trung tâm: </span>
+                  {state.obstacle.centerHint.clue}
+                </>
+              ) : (
+                <button className="btn-ghost !px-3 !py-1" onClick={() => emit("host:revealCenterHint")}>
+                  Mở gợi ý trung tâm (mảnh ghép thứ 5)
+                </button>
+              )}
+            </div>
+
             <button className="btn-red w-full" onClick={() => emit("host:revealKeyword")}>
-              Mở chướng ngại vật (từ khóa)
+              Công bố từ khóa (bỏ cuộc / hết giờ)
             </button>
           </div>
         )}
