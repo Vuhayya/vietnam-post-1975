@@ -290,17 +290,27 @@ export class Room {
     this.revealed = true;
     const q = this.current;
 
-    if (this.phase === "round1" || this.phase === "round3") {
+    if (this.phase === "round1") {
       for (const [playerId, rec] of this.answers) {
         const p = this.players.get(playerId);
         if (!p) continue;
         const ok = isCorrect(rec.answer, q.correctAnswer);
         p.lastCorrect = ok;
-        const gained =
-          this.phase === "round1"
-            ? scoreRound1(q, ok)
-            : scoreRound3(q, ok, this.timer.remaining, this.timer.duration);
-        p.score += gained;
+        p.score += scoreRound1(q, ok);
+      }
+    } else if (this.phase === "round3") {
+      // Hang theo thoi gian tra loi rieng cua tung nguoi (timeMs, nho hon = nhanh hon),
+      // chi xep hang trong so nhung nguoi tra loi DUNG (lan chon cuoi cung).
+      const correctByTime = [...this.answers.entries()]
+        .filter(([, rec]) => isCorrect(rec.answer, q.correctAnswer))
+        .sort((a, b) => a[1].timeMs - b[1].timeMs);
+      const rankByPlayer = new Map(correctByTime.map(([playerId], idx) => [playerId, idx + 1]));
+      for (const [playerId, rec] of this.answers) {
+        const p = this.players.get(playerId);
+        if (!p) continue;
+        const ok = isCorrect(rec.answer, q.correctAnswer);
+        p.lastCorrect = ok;
+        p.score += scoreRound3(q, ok, rankByPlayer.get(playerId) ?? 0);
       }
     } else if (this.phase === "round2") {
       // Hang ngang: diem bang nhau cho tat ca nguoi tra loi dung (khong thuong toc do).
