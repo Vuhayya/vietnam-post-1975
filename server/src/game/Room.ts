@@ -526,6 +526,10 @@ export class Room {
       media: this.current.media,
       index: this.questionIndex,
       total: this.phase === "round2" ? this.obstacle.rows.length : this.questionList.length,
+      answerFormat: this.current.answerFormat,
+      music: this.current.music,
+      matchOptions: this.current.matchOptions,
+      timeline: this.current.timeline,
     };
   }
 

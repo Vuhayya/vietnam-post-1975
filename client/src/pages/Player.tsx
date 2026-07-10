@@ -9,6 +9,8 @@ export default function Player() {
   const { state, timer, toast } = useRoom();
   const [myAnswer, setMyAnswer] = useState<string>("");
   const [textAnswer, setTextAnswer] = useState("");
+  const [sequence, setSequence] = useState<string[]>([]);
+  const [matches, setMatches] = useState<Record<string, string>>({});
 
   const code = sessionStorage.getItem("vnr_code") ?? "";
   const name = sessionStorage.getItem("vnr_name") ?? "";
@@ -26,6 +28,9 @@ export default function Player() {
         if (res.ok && res.currentAnswer !== undefined) {
           setMyAnswer(res.currentAnswer);
           setTextAnswer(res.currentAnswer);
+          if (res.currentAnswer && /^[A-Za-z]+$/.test(res.currentAnswer)) {
+            setSequence(res.currentAnswer.toUpperCase().split(""));
+          }
         }
       });
     rejoin();
@@ -52,6 +57,8 @@ export default function Player() {
     if (lastQuestionId.current !== null && qId !== lastQuestionId.current) {
       setMyAnswer("");
       setTextAnswer("");
+      setSequence([]);
+      setMatches({});
     }
     lastQuestionId.current = qId;
   }, [state?.question?.id]);
@@ -64,6 +71,46 @@ export default function Player() {
     if (!canAnswer) return;
     setMyAnswer(val);
     socket.emit("player:answer", { answer: val });
+  };
+
+  const isSequenceMode = q?.answerFormat === "sequence" && !!q.options;
+  const isMatchMode = q?.answerFormat === "match" && !!q.options && !!q.matchOptions;
+
+  const toggleSequencePick = (id: string) => {
+    if (!canAnswer || !q?.options) return;
+    const total = q.options.length;
+    setSequence((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+      if (next.length === total) {
+        const joined = next.join("");
+        setMyAnswer(joined);
+        socket.emit("player:answer", { answer: joined });
+      }
+      return next;
+    });
+  };
+
+  // "match": cham the moc thoi gian -> gan cho anh dau tien chua co the (theo thu tu options).
+  // Cham lai 1 the da dung -> bo gan (tra the ve pool).
+  const toggleMatchPill = (pillId: string) => {
+    if (!canAnswer || !q?.options) return;
+    setMatches((prev) => {
+      const assignedImgId = Object.keys(prev).find((k) => prev[k] === pillId);
+      const next = { ...prev };
+      if (assignedImgId) {
+        delete next[assignedImgId];
+      } else {
+        const targetImg = q.options!.find((o) => !next[o.id]);
+        if (!targetImg) return prev;
+        next[targetImg.id] = pillId;
+      }
+      if (Object.keys(next).length === q.options!.length) {
+        const joined = q.options!.map((o) => next[o.id]).join("");
+        setMyAnswer(joined);
+        socket.emit("player:answer", { answer: joined });
+      }
+      return next;
+    });
   };
 
   const buzz = () => socket.emit("player:buzz");
@@ -125,9 +172,157 @@ export default function Player() {
       {q && state?.questionVisible && (
         <div className="card space-y-4">
           <div className="text-lg font-semibold">{q.text}</div>
-          {q.media?.url && <Media media={q.media} />}
+          {/* Video xem chung tren man hinh trinh chieu (tranh tua truoc lo dap an tren dien thoai rieng) */}
+          {q.media?.url && q.media.kind !== "video" && <Media media={q.media} />}
+          {q.media?.url && q.media.kind === "video" && (
+            <div className="text-center text-sm text-white/60">
+              📺 Xem video gợi ý trên màn hình trình chiếu
+            </div>
+          )}
 
-          {q.options ? (
+          {q.timeline && (
+            <div className="space-y-1">
+              {q.timeline.map((step, idx) => (
+                <div key={idx}>
+                  <div className="flex gap-3 items-center bg-white/5 rounded-lg p-2">
+                    {step.imageUrl && (
+                      <img src={step.imageUrl} alt="" className="w-16 h-16 object-cover rounded-lg shrink-0" />
+                    )}
+                    <div>
+                      <div className="text-[#ffcd00] font-bold text-sm">{step.date}</div>
+                      <div className="text-sm">{step.label}</div>
+                    </div>
+                  </div>
+                  {idx < q.timeline!.length - 1 && (
+                    <div className="text-center text-white/40 text-lg">⬇️</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {isMatchMode ? (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                {q.options!.map((opt, idx) => {
+                  const assignedPillId = matches[opt.id];
+                  const assignedPill = q.matchOptions!.find((p) => p.id === assignedPillId);
+                  const correctPillId = state.revealed ? state.revealedAnswer?.[idx] : undefined;
+                  const isCorrect = state.revealed && !!assignedPillId && assignedPillId === correctPillId;
+                  const isWrong = state.revealed && !!assignedPillId && assignedPillId !== correctPillId;
+                  return (
+                    <div
+                      key={opt.id}
+                      className={`relative rounded-xl overflow-hidden border-2 ${
+                        isCorrect
+                          ? "border-green-400"
+                          : isWrong
+                          ? "border-red-500"
+                          : assignedPill
+                          ? "border-[#ffcd00]"
+                          : "border-white/10"
+                      }`}
+                    >
+                      {opt.imageUrl && (
+                        <img src={opt.imageUrl} alt="" className="w-full h-24 object-cover" />
+                      )}
+                      <div className="absolute top-1 left-1 w-6 h-6 rounded-full bg-black/70 text-[#ffcd00] font-black flex items-center justify-center text-sm">
+                        {idx + 1}
+                      </div>
+                      <div className="px-2 py-1 bg-black/60 text-xs font-medium">
+                        {opt.text}
+                        <div className={`font-bold ${assignedPill ? "text-[#ffcd00]" : "text-white/40"}`}>
+                          {assignedPill ? assignedPill.text : "Chưa chọn"}
+                        </div>
+                        {state.revealed && opt.note && (
+                          <div className="text-green-300 font-bold">Đáp án: {opt.note}</div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {q.matchOptions!.map((pill) => {
+                  const used = Object.values(matches).includes(pill.id);
+                  return (
+                    <button
+                      key={pill.id}
+                      onClick={() => toggleMatchPill(pill.id)}
+                      disabled={!canAnswer}
+                      className={`px-3 py-2 rounded-lg font-medium border transition ${
+                        used
+                          ? "bg-[#ffcd00] text-red-950 border-yellow-300"
+                          : "bg-white/10 border-white/10 hover:bg-white/20"
+                      }`}
+                    >
+                      {pill.text}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="text-center text-sm text-white/70">
+                Chạm thẻ mốc thời gian theo thứ tự ảnh 1 → 2 → 3 → 4
+              </div>
+            </div>
+          ) : isSequenceMode ? (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                {q.options!.map((opt) => {
+                  const pickIndex = sequence.indexOf(opt.id);
+                  const picked = pickIndex !== -1;
+                  const correctOrder = state.revealed
+                    ? state.revealedAnswer?.toUpperCase().indexOf(opt.id.toUpperCase()) ?? -1
+                    : -1;
+                  return (
+                    <button
+                      key={opt.id}
+                      onClick={() => toggleSequencePick(opt.id)}
+                      disabled={!canAnswer}
+                      className={`relative rounded-xl overflow-hidden border-2 text-left transition ${
+                        picked ? "border-[#ffcd00]" : "border-white/10"
+                      }`}
+                    >
+                      {opt.imageUrl && (
+                        <img src={opt.imageUrl} alt="" className="w-full h-24 object-cover" />
+                      )}
+                      <div className="px-2 py-1 bg-black/60 text-xs font-medium">
+                        {opt.text}
+                        {correctOrder !== -1 && opt.note && (
+                          <div className="text-green-300 font-bold">{opt.note}</div>
+                        )}
+                      </div>
+                      {picked && (
+                        <div className="absolute top-1 left-1 w-6 h-6 rounded-full bg-[#ffcd00] text-red-950 font-black flex items-center justify-center text-sm">
+                          {pickIndex + 1}
+                        </div>
+                      )}
+                      {correctOrder !== -1 && (
+                        <div className="absolute top-1 right-1 w-6 h-6 rounded-full bg-green-500 text-white font-black flex items-center justify-center text-sm">
+                          {correctOrder + 1}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="text-center text-sm text-white/70">
+                {sequence.length > 0
+                  ? `Thứ tự đã chọn: ${sequence.join(" → ")}`
+                  : "Chạm vào ảnh theo thứ tự từ sớm nhất đến muộn nhất"}
+              </div>
+              {sequence.length > 0 && canAnswer && (
+                <button className="btn-ghost w-full !py-2 text-sm" onClick={() => setSequence([])}>
+                  Chọn lại
+                </button>
+              )}
+              {state.revealed && state.revealedAnswer && (
+                <div className="text-center text-sm text-green-300 font-bold">
+                  Thứ tự đúng: {state.revealedAnswer.toUpperCase().split("").join(" → ")}
+                </div>
+              )}
+            </div>
+          ) : q.options ? (
             <div className="grid grid-cols-1 gap-2">
               {q.options.map((opt) => {
                 const chosen = myAnswer === opt.id;

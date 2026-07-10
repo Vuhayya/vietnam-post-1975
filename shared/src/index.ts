@@ -21,11 +21,20 @@ export type QuestionType =
 export interface QuestionOption {
   id: string; // "A" | "B" | "C" | "D"
   text: string;
+  imageUrl?: string; // anh minh hoa cho tung phuong an (vd: cau sap xep thu tu)
+  note?: string; // ghi chu hien kem khi cong bo dap an (vd: moc thoi gian cua su kien)
 }
 
 export interface MediaAsset {
   kind: "image" | "video" | "audio";
   url: string;
+}
+
+// ---- Timeline hien thi (vd: chuoi su kien -> doan chu de) ------------------
+export interface TimelineStep {
+  imageUrl?: string;
+  date: string;
+  label: string;
 }
 
 export interface Question {
@@ -34,11 +43,15 @@ export interface Question {
   type: QuestionType;
   text: string;
   options?: QuestionOption[]; // cho mcq / media dang trac nghiem
-  correctAnswer: string; // option id ("A") hoac dap an dang text
+  correctAnswer: string; // option id ("A"), dap an dang text, hoac chuoi thu tu ("BDAC") neu answerFormat = "sequence"
   timeLimit: number; // giay
   points: number; // diem co ban
   media?: MediaAsset;
   explanation?: string; // giai thich hien khi reveal
+  answerFormat?: "single" | "sequence" | "match"; // "sequence" = sap xep lai thu tu options; "match" = ghep moi option (anh) voi 1 the trong matchOptions
+  music?: string; // nhac nen lap lai tren man hinh trinh chieu trong luc tra loi cau nay (vd: "/music/xxx.mp3")
+  matchOptions?: QuestionOption[]; // cac "the" de ghep voi tung option (dung khi answerFormat = "match"), da xao tron san
+  timeline?: TimelineStep[]; // chuoi su kien hien thi tinh (vd: "chuoi su kien nay phan anh qua trinh nao?")
 }
 
 // ---- Vong 2: Chuong ngai vat ----------------------------------------------
@@ -128,6 +141,10 @@ export interface PublicQuestion {
   media?: MediaAsset;
   index: number; // cau thu may
   total: number; // tong so cau cua vong
+  answerFormat?: "single" | "sequence" | "match";
+  music?: string;
+  matchOptions?: QuestionOption[];
+  timeline?: TimelineStep[];
 }
 
 export interface RoomStateSnapshot {

@@ -85,8 +85,18 @@ const RECIPES: Record<SoundName, () => void> = {
   ]),
 };
 
+// Mot so hieu ung dung file mp3 that thay vi tong hop (vd: tieng chuong bam that).
+const SOUND_FILES: Partial<Record<SoundName, string>> = {
+  buzz: "/music/bam_chuong.mp3",
+};
+
 export function playSound(name: SoundName) {
   try {
+    const file = SOUND_FILES[name];
+    if (file) {
+      new Audio(file).play().catch(() => {});
+      return;
+    }
     RECIPES[name]?.();
   } catch {
     /* am thanh loi thi bo qua, khong lam vo game */

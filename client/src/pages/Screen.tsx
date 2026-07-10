@@ -7,6 +7,7 @@ import Scoreboard from "../components/Scoreboard";
 import Media from "../components/Media";
 import { playSound, unlockAudio } from "../lib/sound";
 import { tts } from "../lib/tts";
+import { bgMusic } from "../lib/bgMusic";
 
 export default function Screen() {
   const nav = useNavigate();
@@ -44,11 +45,21 @@ export default function Screen() {
   const enableAudio = () => {
     unlockAudio();
     tts.warmup();
+    bgMusic.warmup();
     playSound("intro");
     setAudioReady(true);
   };
 
   const q = state?.question;
+
+  // Nhac nen lap lai trong luc cau hoi dang mo va chua khoa/cong bo dap an.
+  useEffect(() => {
+    if (q?.music && state?.questionVisible && !state?.revealed && timer.running) {
+      bgMusic.play(q.music);
+    } else {
+      bgMusic.stop();
+    }
+  }, [q?.id, q?.music, state?.questionVisible, state?.revealed, timer.running]);
   const winner = state?.buzzer.winnerId
     ? state.players.find((p) => p.id === state.buzzer.winnerId)
     : null;
@@ -108,7 +119,95 @@ export default function Screen() {
                   <Media media={q.media} />
                 </div>
               )}
-              {q.options && (
+              {q.timeline && (
+                <div className="flex items-center gap-3 mb-6">
+                  {q.timeline.map((step, idx) => (
+                    <div key={idx} className="flex items-center gap-3">
+                      <div className="bg-white/5 rounded-xl p-3 border border-white/10 w-52">
+                        {step.imageUrl && (
+                          <img src={step.imageUrl} alt="" className="w-full h-28 object-cover rounded-lg mb-2" />
+                        )}
+                        <div className="text-[#ffcd00] font-black text-lg">{step.date}</div>
+                        <div className="text-base font-medium leading-snug">{step.label}</div>
+                      </div>
+                      {idx < q.timeline!.length - 1 && (
+                        <div className="text-3xl text-white/40">➡️</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {q.options && q.answerFormat === "match" ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    {q.options.map((o, idx) => (
+                      <div
+                        key={o.id}
+                        className={`relative rounded-xl overflow-hidden border ${
+                          state.revealed ? "border-green-300" : "border-white/10"
+                        }`}
+                      >
+                        {o.imageUrl && (
+                          <img src={o.imageUrl} alt="" className="w-full h-40 object-cover" />
+                        )}
+                        <div className="absolute top-2 left-2 w-9 h-9 rounded-full bg-black/70 text-[#ffcd00] font-black flex items-center justify-center text-xl">
+                          {idx + 1}
+                        </div>
+                        <div className="px-3 py-2 bg-black/60 text-lg font-semibold">
+                          {o.text}
+                          {state.revealed && o.note && (
+                            <div className="text-green-300 text-base font-bold mt-1">{o.note}</div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {q.matchOptions && (
+                    <div className="grid grid-cols-2 gap-3">
+                      {q.matchOptions.map((p) => (
+                        <div
+                          key={p.id}
+                          className="px-4 py-3 rounded-xl text-xl font-semibold border border-white/10 bg-white/10 text-center"
+                        >
+                          {p.text}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : q.options && q.answerFormat === "sequence" ? (
+                <div className="grid grid-cols-2 gap-4">
+                  {q.options.map((o) => {
+                    const order = state.revealed
+                      ? state.revealedAnswer?.toUpperCase().indexOf(o.id.toUpperCase()) ?? -1
+                      : -1;
+                    return (
+                      <div
+                        key={o.id}
+                        className={`relative rounded-xl overflow-hidden border ${
+                          order !== -1 ? "border-green-300" : "border-white/10"
+                        }`}
+                      >
+                        {o.imageUrl && (
+                          <img src={o.imageUrl} alt="" className="w-full h-40 object-cover" />
+                        )}
+                        <div className="px-3 py-2 bg-black/60 text-lg font-semibold">
+                          <span className="font-black text-[#ffcd00] mr-2">{o.id}.</span>
+                          {o.text}
+                          {order !== -1 && o.note && (
+                            <div className="text-green-300 text-base font-bold mt-1">{o.note}</div>
+                          )}
+                        </div>
+                        {order !== -1 && (
+                          <div className="absolute top-2 left-2 w-9 h-9 rounded-full bg-green-500 text-white font-black flex items-center justify-center text-xl">
+                            {order + 1}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : q.options ? (
                 <div className="grid grid-cols-2 gap-4">
                   {q.options.map((o) => {
                     const correct = state.revealed && state.revealedAnswer === o.id;
@@ -127,11 +226,12 @@ export default function Screen() {
                     );
                   })}
                 </div>
-              )}
-              {state.revealed && !q.options && (
-                <div className="mt-4 text-2xl text-green-300 font-bold">
-                  Đáp án: {state.revealedAnswer}
-                </div>
+              ) : (
+                state.revealed && (
+                  <div className="mt-4 text-2xl text-green-300 font-bold">
+                    Đáp án: {state.revealedAnswer}
+                  </div>
+                )
               )}
             </div>
           ) : (

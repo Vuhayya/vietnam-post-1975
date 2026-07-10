@@ -121,7 +121,39 @@ export default function Host() {
             {q && (
               <div className="bg-white/5 rounded-lg p-3">
                 <div className="font-semibold">{q.text}</div>
-                {q.options && (
+                {q.timeline && (
+                  <div className="text-sm text-white/70 mt-1">
+                    {q.timeline.map((s) => `${s.date}: ${s.label}`).join("  →  ")}
+                  </div>
+                )}
+                {q.options && q.answerFormat === "match" ? (
+                  <div className="grid grid-cols-2 gap-1 mt-2 text-sm">
+                    {q.options.map((o, idx) => {
+                      const correctPillId = secret?.correctAnswer?.[idx];
+                      const correctPill = q.matchOptions?.find((p) => p.id === correctPillId);
+                      return (
+                        <div key={o.id} className="text-green-300 font-bold">
+                          {idx + 1}. {o.text} → {correctPill?.text ?? o.note}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : q.options && q.answerFormat === "sequence" ? (
+                  <div className="grid grid-cols-2 gap-1 mt-2 text-sm">
+                    {q.options.map((o) => {
+                      const order = secret?.correctAnswer
+                        ? secret.correctAnswer.toUpperCase().indexOf(o.id.toUpperCase())
+                        : -1;
+                      return (
+                        <div key={o.id} className={order !== -1 ? "text-green-300 font-bold" : "text-white/70"}>
+                          {order !== -1 ? `${order + 1}. ` : `${o.id}. `}
+                          {o.text}
+                          {o.note ? ` (${o.note})` : ""}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : q.options ? (
                   <div className="grid grid-cols-2 gap-1 mt-2 text-sm">
                     {q.options.map((o) => (
                       <div
@@ -137,9 +169,10 @@ export default function Host() {
                       </div>
                     ))}
                   </div>
-                )}
-                {!q.options && secret?.correctAnswer && (
-                  <div className="text-green-300 text-sm mt-1">Đáp án: {secret.correctAnswer}</div>
+                ) : (
+                  secret?.correctAnswer && (
+                    <div className="text-green-300 text-sm mt-1">Đáp án: {secret.correctAnswer}</div>
+                  )
                 )}
               </div>
             )}
