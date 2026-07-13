@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { socket } from "../socket";
 import { useRoom, phaseLabel } from "../lib/useRoom";
 import Media from "../components/Media";
+import PatrioticDecor from "../components/PatrioticDecor";
 
 export default function Player() {
   const nav = useNavigate();
@@ -124,6 +125,7 @@ export default function Player() {
 
   return (
     <div className="min-h-screen p-4 max-w-lg mx-auto flex flex-col gap-4">
+      <PatrioticDecor />
       {/* header */}
       <div className="flex items-center justify-between card !p-3">
         <div>
@@ -401,6 +403,13 @@ export default function Player() {
           )}
         </div>
       )}
+
+      {/* Chan trang: cham yeu nuoc, lap khoang trong phia duoi */}
+      <div className="mt-auto pt-6 text-center text-white/35 text-xs flex items-center justify-center gap-2">
+        <span className="text-[#ffcd00]/70">★</span>
+        <span className="italic">Nước Việt Nam là một, dân tộc Việt Nam là một</span>
+        <span className="text-[#ffcd00]/70">★</span>
+      </div>
 
       {toast && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-black/80 px-4 py-2 rounded-lg">
