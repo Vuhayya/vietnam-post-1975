@@ -117,6 +117,11 @@ export default function Player() {
   const iAmBuzzWinner = state?.buzzer.winnerId === playerId;
   const iAmLocked = state?.buzzer.lockedOut.includes(playerId);
 
+  // Vong 4 (Ve dich): chi Top 5 thi dau; nhung nguoi con lai chi theo doi.
+  const isFinalRound = state?.phase === "round4";
+  const iAmFinalist = !!me?.inFinalFive;
+  const finalSpectator = isFinalRound && !iAmFinalist;
+
   return (
     <div className="min-h-screen p-4 max-w-lg mx-auto flex flex-col gap-4">
       {/* header */}
@@ -143,7 +148,7 @@ export default function Player() {
       )}
 
       {/* trang thai cho */}
-      {(!q || !state?.questionVisible) && (
+      {(!q || !state?.questionVisible) && !finalSpectator && (
         <div className="card text-center py-10 text-white/70">
           {state?.phase === "finished"
             ? "Trận đấu đã kết thúc. Cảm ơn bạn đã tham gia!"
@@ -151,8 +156,19 @@ export default function Player() {
         </div>
       )}
 
+      {/* Vong 4: nguoi ngoai Top 5 chi theo doi */}
+      {finalSpectator && (
+        <div className="card text-center py-8 space-y-1">
+          <div className="text-3xl">👀</div>
+          <div className="font-bold">Vòng Về đích – chỉ Top 5 thi đấu</div>
+          <div className="text-sm text-white/70">
+            Bạn không nằm trong Top 5. Hãy theo dõi phần thi trên màn hình chính và cổ vũ nhé!
+          </div>
+        </div>
+      )}
+
       {/* CHUONG (buzzer) */}
-      {state?.buzzer.open || iAmBuzzWinner ? (
+      {(state?.buzzer.open || iAmBuzzWinner) && !finalSpectator ? (
         <button
           onClick={buzz}
           disabled={!state?.buzzer.open || !!iAmLocked || !!state?.buzzer.winnerId}
@@ -169,7 +185,7 @@ export default function Player() {
       ) : null}
 
       {/* CAU HOI + tra loi */}
-      {q && state?.questionVisible && (
+      {q && state?.questionVisible && !finalSpectator && (
         <div className="card space-y-4">
           <div className="text-lg font-semibold">{q.text}</div>
           {/* Video xem chung tren man hinh trinh chieu (tranh tua truoc lo dap an tren dien thoai rieng) */}

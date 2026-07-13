@@ -341,12 +341,20 @@ export class Room {
 
     if (this.phase === "round4" && this.finish) {
       const val = this.finish.questionValue;
-      const mult = this.finish.starOfHope ? 2 : 1;
-      if (correct) {
-        p.score += val * mult;
+      const isOwner = playerId === this.finish.currentPlayerId;
+      if (isOwner) {
+        // Thi sinh ve dich: Ngoi sao hy vong nhan doi neu dung, bi tru neu sai.
+        const mult = this.finish.starOfHope ? 2 : 1;
+        if (correct) {
+          p.score += val * mult;
+        } else if (this.finish.starOfHope) {
+          p.score -= val;
+        }
       } else {
-        // sai: neu ngoi sao hy vong thi bi tru
-        if (this.finish.starOfHope) p.score -= val;
+        // Nguoi cuop quyen: khong ap dung Ngoi sao hy vong (do la cuoc cua thi
+        // sinh goc). Dung = tron diem goi cau; sai = bi tru dung so diem do.
+        if (correct) p.score += val;
+        else p.score -= val;
       }
       p.lastCorrect = correct;
     } else {
@@ -377,6 +385,8 @@ export class Room {
     if (this.buzzer.lockedOut.includes(playerId)) return;
     const p = this.players.get(playerId);
     if (!p) return;
+    // Vong 4 (Ve dich): chi Top 5 duoc cuop quyen, nhung nguoi khac chi theo doi.
+    if (this.phase === "round4" && !p.inFinalFive) return;
     this.buzzer.winnerId = playerId;
     this.buzzer.open = false;
     this.sound("buzz");
@@ -488,6 +498,11 @@ export class Room {
   openSteal() {
     if (!this.finish) return;
     this.finish.stealOpen = true;
+    // Thi sinh dang tra loi khong duoc cuop quyen cua chinh minh.
+    const owner = this.finish.currentPlayerId;
+    if (owner && !this.buzzer.lockedOut.includes(owner)) {
+      this.buzzer.lockedOut.push(owner);
+    }
     this.openBuzzer();
   }
 

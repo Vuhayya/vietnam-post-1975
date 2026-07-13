@@ -1,0 +1,22 @@
+# Render Blueprint - deploy nguyen app VNR202 Challenge (1 web service).
+# Server Express + Socket.IO tu phuc vu ban build cua client tren cung 1 URL.
+# Deploy: vao https://dashboard.render.com -> New -> Blueprint -> chon repo nay.
+services:
+  - type: web
+    name: vnr202-challenge
+    runtime: node
+    plan: free
+    region: singapore # gan Viet Nam nhat (co the doi: oregon/frankfurt...)
+    # Cai ca devDependencies (vite, tsx) roi build client -> client/dist
+    buildCommand: npm install --include=dev && npm run build
+    # Server chay bang tsx, tu phuc vu client/dist + Socket.IO
+    startCommand: npm run start -w server
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20.18.0"
+      # DATABASE_URL la TUY CHON: khong dat thi game van chay, chi khong luu lich su.
+      # Neu muon luu lich su, tao Postgres tren Render roi dan Internal URL vao day.
+      # - key: DATABASE_URL
+      #   sync: false
