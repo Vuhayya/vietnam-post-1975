@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { socket } from "../socket";
 import { useRoom, phaseLabel } from "../lib/useRoom";
 import Media from "../components/Media";
-import PatrioticDecor from "../components/PatrioticDecor";
+import PatrioticDecor, { Emblem } from "../components/PatrioticDecor";
 
 export default function Player() {
   const nav = useNavigate();
@@ -139,9 +139,12 @@ export default function Player() {
       <PatrioticDecor />
       {/* header */}
       <div className="flex items-center justify-between card !p-3">
-        <div>
-          <div className="font-bold">{name}</div>
-          <div className="text-xs text-white/60">Phòng {code}</div>
+        <div className="flex items-center gap-2.5">
+          <Emblem className="w-10 h-10 shrink-0" />
+          <div>
+            <div className="font-bold">{name}</div>
+            <div className="text-xs text-white/60">Phòng {code}</div>
+          </div>
         </div>
         <div className="text-right">
           <div className="text-2xl font-black text-[#ffcd00]">{me?.score ?? 0}</div>

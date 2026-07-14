@@ -5,6 +5,7 @@ import { useRoom, phaseLabel } from "../lib/useRoom";
 import Obstacle from "../components/Obstacle";
 import Scoreboard from "../components/Scoreboard";
 import Media from "../components/Media";
+import PatrioticDecor, { Emblem, UnityRibbon } from "../components/PatrioticDecor";
 import { playSound, unlockAudio } from "../lib/sound";
 import { tts } from "../lib/tts";
 import { bgMusic } from "../lib/bgMusic";
@@ -66,6 +67,7 @@ export default function Screen() {
 
   return (
     <div className="min-h-screen p-8 flex flex-col">
+      <PatrioticDecor />
       {/* Bat am thanh - can 1 lan click (chinh sach autoplay cua trinh duyet) */}
       {!audioReady && (
         <button
@@ -78,10 +80,18 @@ export default function Screen() {
 
       {/* header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="text-3xl font-black">
-          VNR202 <span className="text-[#ffcd00]">CHALLENGE</span>
+        <div className="flex items-center gap-3">
+          <Emblem className="w-12 h-12" />
+          <div>
+            <div className="text-3xl font-black leading-none">
+              VNR202 <span className="text-[#ffcd00]">CHALLENGE</span>
+            </div>
+            <div className="text-xs text-white/50 tracking-[0.25em] mt-1">
+              HÀNH TRÌNH THỐNG NHẤT VIỆT NAM
+            </div>
+          </div>
         </div>
-        <div className="text-xl font-bold bg-[#da251d] px-5 py-2 rounded-full">
+        <div className="text-xl font-bold bg-[#da251d] px-5 py-2 rounded-full ring-1 ring-[#ffcd00]/40 shadow-lg shadow-red-900/40">
           {phaseLabel(state?.phase ?? "lobby")}
         </div>
       </div>
@@ -253,10 +263,22 @@ export default function Screen() {
               )}
             </div>
           ) : (
-            <div className="card flex-1 flex items-center justify-center text-3xl text-white/50">
-              {state?.phase === "finished"
-                ? "KẾT THÚC - Chúc mừng nhà vô địch!"
-                : `Mã phòng: ${code} · Chờ bắt đầu...`}
+            <div className="card flex-1 flex flex-col items-center justify-center gap-5 text-center">
+              <Emblem className="w-24 h-24" />
+              <div className="text-4xl font-black">
+                VNR202 <span className="text-[#ffcd00]">CHALLENGE</span>
+              </div>
+              <div className="text-lg text-white/60 max-w-xl">
+                Cuộc thi tìm hiểu hành trình thống nhất đất nước — hun đúc tinh thần yêu nước và
+                đại đoàn kết dân tộc Việt Nam.
+              </div>
+              <div className="mt-2 text-white/70">
+                Quét/mở web và nhập mã phòng:{" "}
+                <span className="text-2xl font-black text-[#ffcd00] tracking-[0.3em] align-middle">
+                  {code}
+                </span>
+              </div>
+              <div className="text-white/40">Chờ MC bắt đầu…</div>
             </div>
           )}
 
@@ -328,8 +350,11 @@ export default function Screen() {
       </div>
       )}
 
-      <div className="text-center text-white/40 text-sm mt-4">
-        Người chơi vào tại địa chỉ web này · Mã phòng: <b className="text-[#ffcd00]">{code}</b>
+      <div className="mt-5 space-y-2">
+        <UnityRibbon className="text-base" />
+        <div className="text-center text-white/40 text-sm">
+          Người chơi vào tại địa chỉ web này · Mã phòng: <b className="text-[#ffcd00]">{code}</b>
+        </div>
       </div>
     </div>
   );

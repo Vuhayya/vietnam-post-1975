@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { socket } from "../socket";
+import PatrioticDecor, { Emblem, UnityRibbon } from "../components/PatrioticDecor";
 
 export default function Home() {
   const nav = useNavigate();
@@ -42,12 +43,23 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 gap-8">
-      <div className="text-center">
-        <div className="text-[#ffcd00] font-black tracking-widest text-sm mb-2">VNR202</div>
-        <h1 className="text-5xl md:text-6xl font-black leading-tight">
+      <PatrioticDecor />
+      <div className="text-center flex flex-col items-center">
+        <Emblem className="w-20 h-20 mb-4" />
+        <div className="text-[#ffcd00] font-black tracking-[0.3em] text-xs mb-2">
+          ĐOÀN KẾT · THỐNG NHẤT · TỰ HÀO
+        </div>
+        <h1 className="text-5xl md:text-6xl font-black leading-tight drop-shadow">
           VNR202 <span className="text-[#ffcd00]">CHALLENGE</span>
         </h1>
-        <p className="text-white/70 mt-3">Hành trình Thống nhất Việt Nam - Gameshow học tập</p>
+        <p className="text-white/75 mt-3 text-lg">
+          Hành trình Thống nhất Việt Nam · Gameshow học tập
+        </p>
+        <div className="mt-4 flex items-center gap-2 text-white/50 text-sm">
+          <span className="h-px w-8 bg-white/20" />
+          <span>1975 → 1976</span>
+          <span className="h-px w-8 bg-white/20" />
+        </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-5 w-full max-w-3xl">
@@ -94,6 +106,8 @@ export default function Home() {
       <Link to="/history" className="text-white/60 hover:text-[#ffcd00] text-sm underline">
         Xem lịch sử trận đấu & thống kê
       </Link>
+
+      <UnityRibbon className="mt-2 text-sm" />
     </div>
   );
 }

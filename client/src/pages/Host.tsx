@@ -5,6 +5,7 @@ import { useRoom, phaseLabel } from "../lib/useRoom";
 import type { Phase } from "@vnr/shared";
 import { TIMER_OPTIONS } from "@vnr/shared";
 import Scoreboard from "../components/Scoreboard";
+import PatrioticDecor, { Emblem } from "../components/PatrioticDecor";
 
 const PHASES: { phase: Phase; label: string }[] = [
   { phase: "lobby", label: "Sảnh" },
@@ -38,12 +39,16 @@ export default function Host() {
 
   return (
     <div className="min-h-screen p-4 grid lg:grid-cols-[1fr_320px] gap-4">
+      <PatrioticDecor />
       <div className="space-y-4">
         {/* Header */}
         <div className="card flex items-center justify-between !py-3">
-          <div>
-            <div className="text-xs text-white/60">MÃ PHÒNG</div>
-            <div className="text-3xl font-black tracking-widest text-[#ffcd00]">{code}</div>
+          <div className="flex items-center gap-3">
+            <Emblem className="w-11 h-11" />
+            <div>
+              <div className="text-xs text-white/60">MÃ PHÒNG</div>
+              <div className="text-3xl font-black tracking-widest text-[#ffcd00]">{code}</div>
+            </div>
           </div>
           <div className="text-right">
             <div className="text-sm text-white/60">{phaseLabel(state?.phase ?? "lobby")}</div>
