@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { socket } from "../socket";
 import { useRoom, phaseLabel } from "../lib/useRoom";
 import type { Phase } from "@vnr/shared";
-import { TIMER_OPTIONS, FINISH_VALUES } from "@vnr/shared";
+import { TIMER_OPTIONS } from "@vnr/shared";
 import Scoreboard from "../components/Scoreboard";
 
 const PHASES: { phase: Phase; label: string }[] = [
@@ -345,23 +345,6 @@ export default function Host() {
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-sm text-white/60">
-                Chọn gói (nạp câu mới):
-              </span>
-              {FINISH_VALUES.map((v) => (
-                <button
-                  key={v}
-                  className={
-                    state.finish!.currentPlayerId
-                      ? "btn-yellow !px-3 !py-1"
-                      : "btn-ghost !px-3 !py-1 opacity-50"
-                  }
-                  disabled={!state.finish!.currentPlayerId}
-                  onClick={() => emit("host:choosePackage", { value: v })}
-                >
-                  Gói {v}đ
-                </button>
-              ))}
-              <span className="text-sm text-white/60 ml-2">
                 Còn {state.finish.questionsLeftForTurn}/3 câu
               </span>
               <button
@@ -382,7 +365,7 @@ export default function Host() {
               if (!owner)
                 return (
                   <div className="text-xs text-white/50">
-                    Chọn 1 thí sinh ở trên, rồi bấm Gói 20đ/30đ để nạp câu hỏi.
+                    Chọn 1 thí sinh ở trên, rồi chọn 1 câu hỏi bên dưới cho thí sinh đó.
                   </div>
                 );
               return (
@@ -399,6 +382,58 @@ export default function Host() {
                     Hết giờ tự chấm: đúng → cộng điểm; sai → mở chuông cướp quyền (không lộ đáp án).
                     Bấm 🔒 Khóa để chấm sớm; "Công bố đáp án" chỉ dùng sau khi đã chấm.
                   </div>
+                </div>
+              );
+            })()}
+
+            {/* Kho cau hoi: MC chon truc tiep 1 cau cho thi sinh. Cau da hoi bi khoa. */}
+            {(() => {
+              const all = secret?.finishQuestions ?? [];
+              if (all.length === 0)
+                return (
+                  <div className="text-xs text-white/40">Đang tải kho câu hỏi...</div>
+                );
+              const canPick =
+                !!state.finish!.currentPlayerId && state.finish!.questionsLeftForTurn > 0;
+              const groups: { label: string; points: number }[] = [
+                { label: "Gói 20 điểm", points: 20 },
+                { label: "Gói 30 điểm", points: 30 },
+              ];
+              return (
+                <div className="grid md:grid-cols-2 gap-3 pt-1">
+                  {groups.map((g) => {
+                    const qs = all.filter((x) => x.points === g.points);
+                    const remaining = qs.filter((x) => !x.used).length;
+                    return (
+                      <div key={g.points} className="bg-white/5 rounded-lg p-2">
+                        <div className="text-xs font-bold text-[#ffcd00] mb-1">
+                          {g.label} · còn {remaining}/{qs.length}
+                        </div>
+                        <div className="grid gap-1 max-h-64 overflow-y-auto pr-1">
+                          {qs.map((x, i) => (
+                            <button
+                              key={x.id}
+                              disabled={x.used || !canPick}
+                              title={x.text}
+                              onClick={() => emit("host:loadFinishQuestion", { questionId: x.id })}
+                              className={`text-left text-xs px-2 py-1 rounded border transition ${
+                                x.current
+                                  ? "bg-[#ffcd00] text-red-950 border-yellow-300 font-bold"
+                                  : x.used
+                                  ? "bg-white/5 border-white/5 text-white/30 line-through cursor-not-allowed"
+                                  : canPick
+                                  ? "bg-white/10 border-white/10 hover:bg-white/20"
+                                  : "bg-white/5 border-white/5 text-white/40 cursor-not-allowed"
+                              }`}
+                            >
+                              <span className="font-black mr-1">C{i + 1}.</span>
+                              {x.text.length > 46 ? x.text.slice(0, 46) + "…" : x.text}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })()}

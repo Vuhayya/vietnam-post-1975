@@ -123,7 +123,7 @@ export function registerHandlers(io: IO, manager: GameManager) {
     socket.on("host:selectFinishPlayer", ({ playerId }) =>
       isHost() && room()?.selectFinishPlayer(playerId)
     );
-    socket.on("host:choosePackage", ({ value }) => isHost() && room()?.chooseFinishValue(value));
+    socket.on("host:loadFinishQuestion", ({ questionId }) => isHost() && room()?.loadFinishQuestion(questionId));
     socket.on("host:toggleStar", hostOnly(() => room()!.toggleStar()));
     socket.on("host:openSteal", hostOnly(() => room()!.openSteal()));
 

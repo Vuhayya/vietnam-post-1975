@@ -169,6 +169,9 @@ export interface RoomStateSnapshot {
 export interface HostSecret {
   correctAnswer: string | null;
   playerAnswers: { playerId: string; name: string; answer: string; timeMs: number }[];
+  // Vong 4: toan bo kho cau hoi de MC chon truc tiep cau cho tung thi sinh
+  // (chi gui cho host). used = da hoi roi (khoa lai), current = dang nap.
+  finishQuestions?: { id: string; points: number; text: string; used: boolean; current: boolean }[];
 }
 
 // ============================================================================
@@ -215,7 +218,7 @@ export interface ClientToServerEvents {
 
   // --- vong 4: ve dich ---
   "host:selectFinishPlayer": (data: { playerId: string }) => void;
-  "host:choosePackage": (data: { value: number }) => void; // MC chon goi 20/30 -> nap 1 cau chua dung cua muc do
+  "host:loadFinishQuestion": (data: { questionId: string }) => void; // MC chon truc tiep 1 cau ve dich cho thi sinh
   "host:toggleStar": () => void; // bat/tat ngoi sao hy vong cho cau hien tai
   "host:openSteal": () => void;
 

@@ -20,7 +20,9 @@ import { synthesize } from "../tts/edgeTts.js";
 type IO = Server<ClientToServerEvents, ServerToClientEvents>;
 
 // Vong 4: thoi gian (giay) cho nguoi cuop quyen chon dap an truoc khi tu dong cham.
-const STEAL_TIME = 15;
+const STEAL_TIME = 5;
+// Nhac nen lap lai cho moi cau hoi vong Ve dich (ke ca luc tra loi cuop quyen).
+const FINISH_MUSIC = "/music/tang_toc_sap_xep_cot_moc.mp3";
 
 interface PlayerInternal extends Player {
   socketId: string | null;
@@ -613,33 +615,33 @@ export class Room {
     this.broadcast();
   }
 
-  /** MC bam "Goi 20" / "Goi 30" cho cau tiep theo trong luot -> nap 1 cau ve dich
-   * chua hoi cua muc diem do. Moi thi sinh tra loi 3 cau, cau da hoi khong lap lai. */
-  chooseFinishValue(value: number) {
+  /** MC chon truc tiep 1 cau ve dich (theo id) cho thi sinh dang toi luot.
+   * Cau da hoi (usedFinishIds) bi khoa, khong chon lai duoc. Moi thi sinh tra loi 3 cau. */
+  loadFinishQuestion(questionId: string) {
     if (!this.finish) return;
     if (!this.finish.currentPlayerId) {
-      this.hostToast("Hãy chọn thí sinh trước khi mở gói câu hỏi.", "error");
+      this.hostToast("Hãy chọn thí sinh trước khi chọn câu hỏi.", "error");
       return;
     }
     if (this.finish.questionsLeftForTurn <= 0) {
       this.hostToast("Thí sinh đã trả lời đủ 3 câu. Hãy chọn thí sinh tiếp theo.", "error");
       return;
     }
-    const next = this.questionList.find(
-      (q) => q.points === value && !this.usedFinishIds.has(q.id)
-    );
-    if (!next) {
-      this.hostToast(`Đã hết câu hỏi gói ${value} điểm.`, "error");
+    const q = this.questionList.find((x) => x.id === questionId);
+    if (!q) return;
+    if (this.usedFinishIds.has(q.id)) {
+      this.hostToast("Câu này đã hỏi rồi, hãy chọn câu khác.", "error");
       return;
     }
-    this.finish.questionValue = value;
+    this.finish.questionValue = q.points;
     this.finish.starOfHope = false;
     this.finish.stealOpen = false;
     this.finish.stealerId = null;
     this.finish.ownerJudged = false;
     this.finish.resolved = false;
-    this.current = next;
-    this.questionIndex = this.questionList.indexOf(next);
+    // Gan nhac nen cho cau ve dich (ban sao de khong sua goc trong kho).
+    this.current = { ...q, music: FINISH_MUSIC };
+    this.questionIndex = this.questionList.indexOf(q);
     this.questionVisible = false;
     this.revealed = false;
     this.answers.clear();
@@ -816,6 +818,16 @@ export class Room {
           answer: rec.answer,
           timeMs: rec.timeMs,
         })),
+        finishQuestions:
+          this.phase === "round4"
+            ? this.questionList.map((q) => ({
+                id: q.id,
+                points: q.points,
+                text: q.text,
+                used: this.usedFinishIds.has(q.id),
+                current: this.current?.id === q.id,
+              }))
+            : undefined,
       });
     }
   }
