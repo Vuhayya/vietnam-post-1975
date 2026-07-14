@@ -704,8 +704,11 @@ export class Room {
 
   endGame() {
     this.phase = "finished";
+    this.questionVisible = false; // an cau hoi khoi man hinh trinh chieu
+    this.revealed = false;
     this.resetTimer();
-    this.sound("victory");
+    this.resetBuzzer();
+    this.sound("tong_ket"); // nhac tong ket
     this.broadcast();
   }
 

@@ -86,6 +86,22 @@ export default function Screen() {
         </div>
       </div>
 
+      {state?.phase === "finished" ? (
+        /* Ket thuc: an cau hoi, chi hien nha vo dich + bang xep hang */
+        <div className="flex-1 flex flex-col items-center justify-center gap-8">
+          <div className="text-6xl font-black text-[#ffcd00] animate-pulse">🎉 KẾT THÚC 🎉</div>
+          {state.players[0] && (
+            <div className="text-center">
+              <div className="text-lg text-white/70 mb-1">🏆 NHÀ VÔ ĐỊCH 🏆</div>
+              <div className="text-5xl font-black text-[#ffcd00]">{state.players[0].name}</div>
+              <div className="text-2xl font-bold mt-1">{state.players[0].score} điểm</div>
+            </div>
+          )}
+          <div className="w-full max-w-2xl">
+            <Scoreboard players={state?.players ?? []} />
+          </div>
+        </div>
+      ) : (
       <div className="flex-1 grid grid-cols-3 gap-6">
         {/* khu vuc chinh */}
         <div className="col-span-2 flex flex-col gap-6">
@@ -310,6 +326,7 @@ export default function Screen() {
         {/* bang xep hang */}
         <Scoreboard players={state?.players ?? []} highlightFinal={state?.phase === "round4"} />
       </div>
+      )}
 
       <div className="text-center text-white/40 text-sm mt-4">
         Người chơi vào tại địa chỉ web này · Mã phòng: <b className="text-[#ffcd00]">{code}</b>

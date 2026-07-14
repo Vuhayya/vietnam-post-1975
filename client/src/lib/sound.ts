@@ -86,12 +86,17 @@ const RECIPES: Record<SoundName, () => void> = {
     { f: 110, t: 0, d: 0.4, type: "sawtooth", g: 0.12 },
     { f: 116, t: 0, d: 0.4, type: "sawtooth", g: 0.1 },
   ]),
+  tong_ket: () => play([
+    { f: 523, t: 0, d: 0.15 }, { f: 659, t: 0.15, d: 0.15 }, { f: 784, t: 0.3, d: 0.15 },
+    { f: 1047, t: 0.45, d: 0.2 }, { f: 1319, t: 0.65, d: 0.4 },
+  ]),
 };
 
 // Mot so hieu ung dung file mp3 that thay vi tong hop (vd: tieng chuong bam that).
 const SOUND_FILES: Partial<Record<SoundName, string>> = {
   buzz: "/music/bam_chuong.mp3",
   answerReveal: "/music/vuot_chuong_ngai_vat_intro.mp3",
+  tong_ket: "/music/tong_ket.mp3",
 };
 
 export function playSound(name: SoundName) {

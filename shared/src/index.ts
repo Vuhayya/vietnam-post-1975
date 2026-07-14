@@ -247,7 +247,8 @@ export type SoundName =
   | "buzz"
   | "victory"
   | "applause"
-  | "suspense";
+  | "suspense"
+  | "tong_ket"; // nhac tong ket khi ket thuc tran (file tong_ket)
 
 export const FINISH_VALUES = [20, 30] as const;
 export const TIMER_OPTIONS = [15, 20, 30, 45, 60] as const;
