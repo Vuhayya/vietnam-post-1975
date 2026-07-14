@@ -75,7 +75,7 @@ export default function Host() {
           <div className="card space-y-3">
             <div className="flex items-center justify-between">
               <div className="text-sm font-bold text-white/70">ĐIỀU KHIỂN CÂU HỎI</div>
-              {q && (
+              {q && state.phase !== "round4" && (
                 <div className="text-sm">
                   Câu {q.index + 1}/{q.total}
                 </div>
@@ -84,7 +84,7 @@ export default function Host() {
 
             {/* dieu huong cau (vong 2 chon hang ngang o panel rieng ben duoi) */}
             <div className="flex gap-2">
-              {state.phase !== "round2" && (
+              {state.phase !== "round2" && state.phase !== "round4" && (
                 <>
                   <button
                     className="btn-ghost"
@@ -344,32 +344,44 @@ export default function Host() {
                 ))}
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm text-white/60">Gói điểm:</span>
+              <span className="text-sm text-white/60">
+                Chọn gói (nạp câu mới):
+              </span>
               {FINISH_VALUES.map((v) => (
                 <button
                   key={v}
-                  className={state.finish!.questionValue === v ? "btn-yellow !px-3 !py-1" : "btn-ghost !px-3 !py-1"}
-                  onClick={() =>
-                    emit("host:setQuestionValue", { value: v, star: state.finish!.starOfHope })
+                  className={
+                    state.finish!.currentPlayerId
+                      ? "btn-yellow !px-3 !py-1"
+                      : "btn-ghost !px-3 !py-1 opacity-50"
                   }
+                  disabled={!state.finish!.currentPlayerId}
+                  onClick={() => emit("host:choosePackage", { value: v })}
                 >
-                  {v}
+                  Gói {v}đ
                 </button>
               ))}
+              <span className="text-sm text-white/60 ml-2">
+                Còn {state.finish.questionsLeftForTurn}/3 câu
+              </span>
               <button
                 className={state.finish.starOfHope ? "btn-red !px-3 !py-1" : "btn-ghost !px-3 !py-1"}
-                onClick={() =>
-                  emit("host:setQuestionValue", {
-                    value: state.finish!.questionValue,
-                    star: !state.finish!.starOfHope,
-                  })
-                }
+                onClick={() => emit("host:toggleStar")}
               >
                 ⭐ Ngôi sao hy vọng
               </button>
               <button className="btn-ghost !px-3 !py-1 ml-auto" onClick={() => emit("host:openSteal")}>
                 Mở chuông cướp quyền
               </button>
+            </div>
+            <div className="text-xs text-white/50">
+              {state.finish.currentPlayerId
+                ? `Đang thi: ${
+                    state.players.find((p) => p.id === state.finish!.currentPlayerId)?.name ?? "?"
+                  } · Gói hiện tại: ${state.finish.questionValue}đ${
+                    state.finish.starOfHope ? " · ⭐ x2" : ""
+                  }`
+                : "Chọn 1 thí sinh ở trên, rồi bấm Gói 20đ/30đ để nạp câu hỏi."}
             </div>
           </div>
         )}

@@ -66,7 +66,18 @@ export default function Player() {
 
   const q = state?.question;
   // Nguoi choi co the bam lai de doi dap an cho toi khi het gio / MC cong bo dap an.
-  const canAnswer = state?.questionVisible && !state?.revealed && timer.running;
+  let canAnswer = !!state?.questionVisible && !state?.revealed && timer.running;
+  // Vong 4 (Ve dich): chi 1 nguoi duoc tra loi tai moi thoi diem.
+  // - Binh thuong: thi sinh dang toi luot (currentPlayerId).
+  // - Khi MC mo chuong cuop quyen: chi nguoi gianh duoc chuong (stealerId).
+  // 4 nguoi con lai khong the chon dap an cho toi khi cuop duoc quyen.
+  if (state?.phase === "round4" && state.finish) {
+    const f = state.finish;
+    const activeId = f.stealOpen ? f.stealerId : f.currentPlayerId;
+    const iAmActive = activeId === playerId;
+    const windowOpen = f.stealOpen ? true : timer.running;
+    canAnswer = !!state.questionVisible && !state.revealed && iAmActive && windowOpen;
+  }
 
   const answer = (val: string) => {
     if (!canAnswer) return;
@@ -384,6 +395,16 @@ export default function Player() {
               >
                 Gửi
               </button>
+            </div>
+          )}
+
+          {isFinalRound && iAmFinalist && !canAnswer && !state.revealed && !me?.answered && (
+            <div className="text-center text-white/60 text-sm">
+              {state.finish?.stealOpen
+                ? iAmLocked
+                  ? "Bạn không được cướp quyền ở câu này."
+                  : "Bấm chuông phía trên để giành quyền trả lời!"
+                : "Thí sinh khác đang trả lời. Chờ MC mở chuông cướp quyền..."}
             </div>
           )}
 

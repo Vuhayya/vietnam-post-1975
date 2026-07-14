@@ -61,6 +61,8 @@ export class Room {
 
   // vong 4
   finish: FinishState | null = null;
+  // cac cau ve dich da hoi (khong hoi lai trong ca vong) - reset moi khi vao vong 4
+  private usedFinishIds = new Set<string>();
 
   constructor(code: string, io: IO) {
     this.code = code;
@@ -74,6 +76,9 @@ export class Room {
   }
   sound(name: SoundName) {
     this.roomAll().emit("sound", { name });
+  }
+  hostToast(message: string, kind: "info" | "success" | "error" = "info") {
+    if (this.hostSocketId) this.io.to(this.hostSocketId).emit("toast", { message, kind });
   }
   toast(message: string, kind: "info" | "success" | "error" = "info") {
     this.roomAll().emit("toast", { message, kind });
@@ -144,7 +149,8 @@ export class Room {
 
     // Nap san cau dau tien de MC thay ngay noi dung, khong can bam "Cau sau".
     // Nguoi choi van khong thay gi cho toi khi MC bam "Hien cau hoi" (xem broadcast()).
-    if (this.questionList.length > 0) {
+    // Vong 4 (Ve dich) KHONG nap san: MC phai chon thi sinh roi bam goi 20/30 de nap cau.
+    if (phase !== "round4" && this.questionList.length > 0) {
       this.questionIndex = 0;
       this.current = this.questionList[0];
       this.prewarmTts();
@@ -160,6 +166,7 @@ export class Room {
       .slice(0, 5);
     for (const p of this.players.values()) p.inFinalFive = false;
     for (const p of top5) p.inFinalFive = true;
+    this.usedFinishIds.clear();
     this.finish = {
       currentPlayerId: null,
       questionValue: 20,
@@ -197,6 +204,8 @@ export class Room {
   showQuestion() {
     if (!this.current) return;
     this.questionVisible = true;
+    // Vong 4: danh dau cau da hoi de khong lap lai cho cac thi sinh sau.
+    if (this.phase === "round4") this.usedFinishIds.add(this.current.id);
     this.sound("reveal");
     // Bam gio ngay khi hien cau hoi, dung thoi gian MC da chon truoc do
     // (hoac thoi gian mac dinh cua cau neu MC chua chon).
@@ -269,9 +278,23 @@ export class Room {
   // (diem toc do vong 3 tinh theo lan chon cuoi cung).
   submitAnswer(playerId: string, answer: string) {
     if (!this.current || !this.questionVisible || this.revealed) return;
-    if (!this.timer.running && this.timer.duration > 0 && this.timer.remaining === 0) return;
     const p = this.players.get(playerId);
     if (!p) return;
+
+    // Vong 4 (Ve dich): chi 1 nguoi duoc tra loi tai moi thoi diem.
+    // - Binh thuong: dung thi sinh dang toi luot (currentPlayerId).
+    // - Khi MC mo chuong cuop quyen: chi nguoi gianh duoc chuong (stealerId).
+    // 4 nguoi con lai KHONG duoc chon dap an cho toi khi cuop duoc quyen.
+    if (this.phase === "round4" && this.finish) {
+      if (!p.inFinalFive) return;
+      const activeId = this.finish.stealOpen
+        ? this.finish.stealerId
+        : this.finish.currentPlayerId;
+      if (playerId !== activeId) return;
+    } else {
+      // Cac vong khac: het gio thi khong nhan them dap an.
+      if (!this.timer.running && this.timer.duration > 0 && this.timer.remaining === 0) return;
+    }
     const timeMs = this.questionStartAt ? Date.now() - this.questionStartAt : 0;
     this.answers.set(playerId, { answer, timeMs });
     p.answered = true;
@@ -287,8 +310,14 @@ export class Room {
   // -- cong bo dap an + cham diem tu dong (vong 1, 2 hang ngang & 3) -------
   reveal() {
     if (!this.current) return;
+    const wasRevealed = this.revealed;
     this.revealed = true;
     const q = this.current;
+
+    // Vong 4: moi lan cong bo dap an = da xong 1 cau trong luot (tru di 1).
+    if (this.phase === "round4" && this.finish && !wasRevealed) {
+      this.finish.questionsLeftForTurn = Math.max(0, this.finish.questionsLeftForTurn - 1);
+    }
 
     if (this.phase === "round1") {
       for (const [playerId, rec] of this.answers) {
@@ -486,13 +515,61 @@ export class Room {
     this.finish.stealerId = null;
     this.finish.starOfHope = false;
     this.finish.questionsLeftForTurn = 3;
+    // Bat dau luot moi: xoa cau hien tai, MC phai bam goi 20/30 de nap cau dau.
+    this.current = null;
+    this.questionVisible = false;
+    this.revealed = false;
+    this.answers.clear();
+    for (const p of this.players.values()) {
+      p.answered = false;
+      p.lastCorrect = undefined;
+    }
+    this.resetTimer();
     this.resetBuzzer();
     this.broadcast();
   }
-  setQuestionValue(value: number, star: boolean) {
+
+  /** MC bam "Goi 20" / "Goi 30" cho cau tiep theo trong luot -> nap 1 cau ve dich
+   * chua hoi cua muc diem do. Moi thi sinh tra loi 3 cau, cau da hoi khong lap lai. */
+  chooseFinishValue(value: number) {
     if (!this.finish) return;
+    if (!this.finish.currentPlayerId) {
+      this.hostToast("Hãy chọn thí sinh trước khi mở gói câu hỏi.", "error");
+      return;
+    }
+    if (this.finish.questionsLeftForTurn <= 0) {
+      this.hostToast("Thí sinh đã trả lời đủ 3 câu. Hãy chọn thí sinh tiếp theo.", "error");
+      return;
+    }
+    const next = this.questionList.find(
+      (q) => q.points === value && !this.usedFinishIds.has(q.id)
+    );
+    if (!next) {
+      this.hostToast(`Đã hết câu hỏi gói ${value} điểm.`, "error");
+      return;
+    }
     this.finish.questionValue = value;
-    this.finish.starOfHope = star;
+    this.finish.starOfHope = false;
+    this.finish.stealOpen = false;
+    this.finish.stealerId = null;
+    this.current = next;
+    this.questionIndex = this.questionList.indexOf(next);
+    this.questionVisible = false;
+    this.revealed = false;
+    this.answers.clear();
+    for (const p of this.players.values()) {
+      p.answered = false;
+      p.lastCorrect = undefined;
+    }
+    this.resetTimer();
+    this.resetBuzzer();
+    this.prewarmTts();
+    this.broadcast();
+  }
+
+  toggleStar() {
+    if (!this.finish) return;
+    this.finish.starOfHope = !this.finish.starOfHope;
     this.broadcast();
   }
   openSteal() {

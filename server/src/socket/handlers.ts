@@ -123,9 +123,8 @@ export function registerHandlers(io: IO, manager: GameManager) {
     socket.on("host:selectFinishPlayer", ({ playerId }) =>
       isHost() && room()?.selectFinishPlayer(playerId)
     );
-    socket.on("host:setQuestionValue", ({ value, star }) =>
-      isHost() && room()?.setQuestionValue(value, star)
-    );
+    socket.on("host:choosePackage", ({ value }) => isHost() && room()?.chooseFinishValue(value));
+    socket.on("host:toggleStar", hostOnly(() => room()!.toggleStar()));
     socket.on("host:openSteal", hostOnly(() => room()!.openSteal()));
 
     // ---- AI doc cau hoi --------------------------------------------------

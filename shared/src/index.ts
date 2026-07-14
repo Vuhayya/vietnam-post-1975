@@ -213,7 +213,8 @@ export interface ClientToServerEvents {
 
   // --- vong 4: ve dich ---
   "host:selectFinishPlayer": (data: { playerId: string }) => void;
-  "host:setQuestionValue": (data: { value: number; star: boolean }) => void;
+  "host:choosePackage": (data: { value: number }) => void; // MC chon goi 20/30 -> nap 1 cau chua dung cua muc do
+  "host:toggleStar": () => void; // bat/tat ngoi sao hy vong cho cau hien tai
   "host:openSteal": () => void;
 
   // --- AI doc cau hoi ---
@@ -242,5 +243,5 @@ export type SoundName =
   | "applause"
   | "suspense";
 
-export const FINISH_VALUES = [10, 20, 30] as const;
+export const FINISH_VALUES = [20, 30] as const;
 export const TIMER_OPTIONS = [15, 20, 30, 45, 60] as const;
