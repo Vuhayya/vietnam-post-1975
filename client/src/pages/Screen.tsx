@@ -111,7 +111,9 @@ export default function Screen() {
           ) : q && state?.questionVisible ? (
             <div className="card flex-1 flex flex-col justify-center">
               <div className="text-sm text-[#ffcd00] mb-2">
-                Câu {q.index + 1}/{q.total} · {q.points} điểm
+                {state?.phase === "round4"
+                  ? `Về đích · Gói ${q.points} điểm`
+                  : `Câu ${q.index + 1}/${q.total} · ${q.points} điểm`}
               </div>
               <div className="text-4xl font-bold leading-snug mb-6">{q.text}</div>
               {q.media?.url && (
@@ -242,8 +244,63 @@ export default function Screen() {
             </div>
           )}
 
-          {/* nguoi bam chuong */}
-          {winner && (
+          {/* Vong 4: trang thai thi sinh dang thi + ket qua (Dung/Sai) */}
+          {state?.phase === "round4" && state.finish?.currentPlayerId && (() => {
+            const f = state.finish!;
+            const owner = state.players.find((p) => p.id === f.currentPlayerId);
+            const stealer = f.stealerId ? state.players.find((p) => p.id === f.stealerId) : null;
+            const ownerGain = f.questionValue * (f.starOfHope ? 2 : 1);
+            return (
+              <div className="card space-y-3">
+                <div className="text-center text-2xl font-bold">
+                  🎯 Đang thi: <span className="text-[#ffcd00]">{owner?.name}</span>
+                  <span className="text-white/60 text-lg"> · Gói {f.questionValue}đ</span>
+                  {f.starOfHope && <span className="text-[#ffcd00] text-lg"> · ⭐ x2</span>}
+                </div>
+
+                {/* Ket qua thi sinh chinh */}
+                {f.ownerJudged &&
+                  (owner?.lastCorrect ? (
+                    <div className="bg-green-600 rounded-2xl py-4 text-center text-4xl font-black">
+                      ✅ {owner?.name}: CHÍNH XÁC +{ownerGain}đ
+                    </div>
+                  ) : (
+                    <div className="bg-[#da251d] rounded-2xl py-4 text-center text-4xl font-black">
+                      ❌ {owner?.name}: SAI RỒI
+                    </div>
+                  ))}
+
+                {/* Moi cuop quyen (chua co nguoi bam) */}
+                {f.stealOpen && !stealer && (
+                  <div className="bg-orange-500 rounded-2xl py-4 text-center text-3xl font-black animate-pulse">
+                    🔔 MỜI CÁC THÍ SINH CÒN LẠI BẤM CHUÔNG CƯỚP QUYỀN!
+                  </div>
+                )}
+
+                {/* Nguoi cuop quyen + ket qua */}
+                {stealer && (
+                  <div
+                    className={`rounded-2xl py-4 text-center text-3xl font-black ${
+                      !f.resolved
+                        ? "bg-green-600 animate-pulse"
+                        : stealer.lastCorrect
+                        ? "bg-green-600"
+                        : "bg-[#da251d]"
+                    }`}
+                  >
+                    {!f.resolved
+                      ? `🔔 ${stealer.name} giành quyền cướp — đang trả lời...`
+                      : stealer.lastCorrect
+                      ? `✅ ${stealer.name} cướp quyền THÀNH CÔNG +${f.questionValue}đ`
+                      : `❌ ${stealer.name} cướp quyền SAI −${f.questionValue}đ`}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* nguoi bam chuong (cac vong khac) */}
+          {winner && state?.phase !== "round4" && (
             <div className="bg-green-600 rounded-2xl py-4 text-center text-3xl font-black animate-pulse">
               🔔 {winner.name} giành quyền trả lời!
             </div>

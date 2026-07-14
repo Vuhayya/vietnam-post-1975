@@ -121,6 +121,8 @@ export interface FinishState {
   turnOrder: string[]; // thu tu 5 nguoi
   turnIndex: number; // dang o nguoi thu may
   questionsLeftForTurn: number; // con may cau trong luot nay (3)
+  ownerJudged: boolean; // thi sinh chinh da duoc cham (dung/sai) cho cau hien tai chua
+  resolved: boolean; // cau hien tai da xu ly xong (dung, hoac cuop xong, hoac da cong bo)
 }
 
 // ---- Trang thai chuong (buzzer) -------------------------------------------

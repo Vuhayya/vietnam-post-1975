@@ -221,8 +221,8 @@ export default function Host() {
           </div>
         )}
 
-        {/* Chuong */}
-        {state && state.phase !== "lobby" && (
+        {/* Chuong (vong 4 cuop quyen la tu dong nen an bang dieu khien chuong thu cong) */}
+        {state && state.phase !== "lobby" && state.phase !== "round4" && (
           <div className="card space-y-2">
             <div className="text-sm font-bold text-white/70">CHUÔNG</div>
             <div className="flex gap-2 items-center">
@@ -370,19 +370,38 @@ export default function Host() {
               >
                 ⭐ Ngôi sao hy vọng
               </button>
-              <button className="btn-ghost !px-3 !py-1 ml-auto" onClick={() => emit("host:openSteal")}>
-                Mở chuông cướp quyền
-              </button>
+              {state.finish.stealOpen && (
+                <span className="ml-auto text-sm font-bold text-orange-300">🔔 Đang mở CƯỚP QUYỀN</span>
+              )}
+              {state.finish.resolved && !state.finish.stealOpen && (
+                <span className="ml-auto text-sm font-bold text-green-300">✓ Đã xong câu này</span>
+              )}
             </div>
-            <div className="text-xs text-white/50">
-              {state.finish.currentPlayerId
-                ? `Đang thi: ${
-                    state.players.find((p) => p.id === state.finish!.currentPlayerId)?.name ?? "?"
-                  } · Gói hiện tại: ${state.finish.questionValue}đ${
-                    state.finish.starOfHope ? " · ⭐ x2" : ""
-                  }`
-                : "Chọn 1 thí sinh ở trên, rồi bấm Gói 20đ/30đ để nạp câu hỏi."}
-            </div>
+            {(() => {
+              const owner = state.players.find((p) => p.id === state.finish!.currentPlayerId);
+              if (!owner)
+                return (
+                  <div className="text-xs text-white/50">
+                    Chọn 1 thí sinh ở trên, rồi bấm Gói 20đ/30đ để nạp câu hỏi.
+                  </div>
+                );
+              return (
+                <div className="text-xs text-white/60">
+                  Đang thi: <b className="text-white">{owner.name}</b> · Gói{" "}
+                  {state.finish!.questionValue}đ{state.finish!.starOfHope ? " · ⭐ x2" : ""}
+                  {state.finish!.ownerJudged &&
+                    (owner.lastCorrect ? (
+                      <b className="text-green-300"> · ĐÚNG (tự cộng điểm)</b>
+                    ) : (
+                      <b className="text-red-300"> · SAI → tự mở chuông cướp quyền</b>
+                    ))}
+                  <div className="text-white/40 mt-0.5">
+                    Hết giờ tự chấm: đúng → cộng điểm; sai → mở chuông cướp quyền (không lộ đáp án).
+                    Bấm 🔒 Khóa để chấm sớm; "Công bố đáp án" chỉ dùng sau khi đã chấm.
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -408,20 +427,24 @@ export default function Host() {
                     )}
                   </div>
                   <div className="flex gap-1">
-                    <button
-                      className="btn bg-green-600 !px-2 !py-1 text-sm"
-                      title="Đúng"
-                      onClick={() => emit("host:judge", { playerId: p.id, correct: true })}
-                    >
-                      ✓
-                    </button>
-                    <button
-                      className="btn bg-red-600 !px-2 !py-1 text-sm"
-                      title="Sai"
-                      onClick={() => emit("host:judge", { playerId: p.id, correct: false })}
-                    >
-                      ✗
-                    </button>
+                    {state?.phase !== "round4" && (
+                      <>
+                        <button
+                          className="btn bg-green-600 !px-2 !py-1 text-sm"
+                          title="Đúng"
+                          onClick={() => emit("host:judge", { playerId: p.id, correct: true })}
+                        >
+                          ✓
+                        </button>
+                        <button
+                          className="btn bg-red-600 !px-2 !py-1 text-sm"
+                          title="Sai"
+                          onClick={() => emit("host:judge", { playerId: p.id, correct: false })}
+                        >
+                          ✗
+                        </button>
+                      </>
+                    )}
                     <button
                       className="btn bg-white/10 !px-2 !py-1 text-sm"
                       onClick={() => emit("host:adjustScore", { playerId: p.id, delta: 5 })}

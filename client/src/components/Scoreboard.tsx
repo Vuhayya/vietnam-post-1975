@@ -39,6 +39,15 @@ export default function Scoreboard({
             <div className="flex-1 truncate font-medium">
               {p.name}
               {!p.connected && <span className="text-red-400 text-xs ml-2">(mất kết nối)</span>}
+              {highlightFinal && p.inFinalFive && p.lastCorrect !== undefined && (
+                <span
+                  className={`text-xs ml-2 font-bold px-2 py-0.5 rounded-full ${
+                    p.lastCorrect ? "bg-green-500/30 text-green-300" : "bg-red-500/30 text-red-300"
+                  }`}
+                >
+                  {p.lastCorrect ? "✓ Đúng" : "✗ Sai rồi"}
+                </span>
+              )}
             </div>
             <div className="font-black text-lg">{p.score}</div>
           </div>

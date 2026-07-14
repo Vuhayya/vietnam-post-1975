@@ -413,7 +413,7 @@ export default function Player() {
               {canAnswer ? "Đã chọn đáp án. Bạn có thể bấm lại để đổi." : "Đã chốt đáp án. Chờ kết quả..."}
             </div>
           )}
-          {state.revealed && me?.lastCorrect !== undefined && (
+          {state.revealed && !isFinalRound && me?.lastCorrect !== undefined && (
             <div
               className={`text-center font-bold ${
                 me.lastCorrect ? "text-green-300" : "text-red-300"
@@ -422,6 +422,20 @@ export default function Player() {
               {me.lastCorrect ? "Chính xác! 🎉" : "Chưa đúng 😢"}
             </div>
           )}
+          {/* Vong 4: bao ket qua cho nguoi vua tra loi (chinh chu / cuop quyen), khong can cho reveal */}
+          {isFinalRound &&
+            me?.lastCorrect !== undefined &&
+            (me.id === state.finish?.currentPlayerId
+              ? state.finish?.ownerJudged
+              : me.id === state.finish?.stealerId && state.finish?.resolved) && (
+              <div
+                className={`text-center font-bold ${
+                  me.lastCorrect ? "text-green-300" : "text-red-300"
+                }`}
+              >
+                {me.lastCorrect ? "Chính xác! 🎉" : "Chưa đúng 😢"}
+              </div>
+            )}
         </div>
       )}
 

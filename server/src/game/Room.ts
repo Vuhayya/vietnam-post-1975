@@ -19,6 +19,9 @@ import { synthesize } from "../tts/edgeTts.js";
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents>;
 
+// Vong 4: thoi gian (giay) cho nguoi cuop quyen chon dap an truoc khi tu dong cham.
+const STEAL_TIME = 15;
+
 interface PlayerInternal extends Player {
   socketId: string | null;
 }
@@ -176,6 +179,8 @@ export class Room {
       turnOrder: top5.map((p) => p.id),
       turnIndex: -1,
       questionsLeftForTurn: 0,
+      ownerJudged: false,
+      resolved: false,
     };
   }
 
@@ -270,7 +275,73 @@ export class Room {
     this.timerHandle = null;
     this.buzzer.open = false;
     this.emitTimer();
+    // Vong 4: het gio (hoac MC bam Khoa) -> tu dong cham nguoi dang tra loi.
+    if (this.phase === "round4") {
+      this.autoJudgeFinish();
+      return; // autoJudgeFinish da broadcast
+    }
     this.broadcast();
+  }
+
+  /** Vong 4: tu dong cham thi sinh dang tra loi khi het gio (khong can MC biet dap an).
+   * - Thi sinh chinh (chu luot): dung -> tu cong diem (x2 neu Ngoi sao hy vong) + cong bo dap an;
+   *   sai -> hien "sai" + TU DONG mo chuong cuop quyen, KHONG cong bo dap an.
+   * - Nguoi cuop quyen: dung -> +diem goi; sai -> -diem goi; roi cong bo dap an. */
+  private autoJudgeFinish() {
+    if (!this.finish || !this.current) {
+      this.broadcast();
+      return;
+    }
+    const f = this.finish;
+    const q = this.current;
+    const val = f.questionValue;
+
+    // Dang cham nguoi cuop quyen (da co nguoi gianh duoc chuong)
+    if (f.stealOpen && f.stealerId) {
+      if (!f.resolved) {
+        const stealer = this.players.get(f.stealerId);
+        if (stealer) {
+          const rec = this.answers.get(f.stealerId);
+          const ok = !!rec && isCorrect(rec.answer, q.correctAnswer);
+          stealer.lastCorrect = ok;
+          if (rec) stealer.score += ok ? val : -val; // co tra loi: dung +, sai -
+          this.sound(ok ? "correct" : "wrong");
+        }
+        f.resolved = true;
+        this.revealed = true; // cau da xong, cong bo dap an cho ca phong
+      }
+      this.broadcast();
+      return;
+    }
+
+    // Cham thi sinh chinh (chu luot)
+    if (f.ownerJudged) {
+      this.broadcast();
+      return;
+    }
+    const ownerId = f.currentPlayerId;
+    const owner = ownerId ? this.players.get(ownerId) : null;
+    if (!owner) {
+      this.broadcast();
+      return;
+    }
+    f.ownerJudged = true;
+    f.questionsLeftForTurn = Math.max(0, f.questionsLeftForTurn - 1);
+    const rec = ownerId ? this.answers.get(ownerId) : undefined;
+    const ok = !!rec && isCorrect(rec.answer, q.correctAnswer);
+    owner.lastCorrect = ok;
+    if (ok) {
+      owner.score += val * (f.starOfHope ? 2 : 1);
+      f.resolved = true;
+      this.revealed = true; // dung roi, khong con ai cuop -> cong bo dap an
+      this.sound("correct");
+      this.broadcast();
+    } else {
+      if (f.starOfHope) owner.score -= val; // dung Ngoi sao hy vong ma sai thi bi tru
+      this.sound("wrong");
+      // Tu dong mo chuong cuop quyen cho 4 nguoi con lai, KHONG cong bo dap an.
+      this.openSteal(); // ham nay da broadcast
+    }
   }
 
   // -- tra loi -------------------------------------------------------------
@@ -310,14 +381,21 @@ export class Room {
   // -- cong bo dap an + cham diem tu dong (vong 1, 2 hang ngang & 3) -------
   reveal() {
     if (!this.current) return;
-    const wasRevealed = this.revealed;
+
+    // Vong 4 (Ve dich): KHONG cho cong bo dap an khi thi sinh chinh chua tra loi xong
+    // (tranh lo dap an cho nhung nguoi sap cuop quyen / cac thi sinh sau).
+    // Sau khi da cham thi sinh chinh, MC co the bam de cong bo dap an cho ca phong xem.
+    if (this.phase === "round4") {
+      if (!this.finish || !this.finish.ownerJudged) return;
+      this.revealed = true;
+      this.finish.resolved = true;
+      this.sound("reveal");
+      this.broadcast();
+      return;
+    }
+
     this.revealed = true;
     const q = this.current;
-
-    // Vong 4: moi lan cong bo dap an = da xong 1 cau trong luot (tru di 1).
-    if (this.phase === "round4" && this.finish && !wasRevealed) {
-      this.finish.questionsLeftForTurn = Math.max(0, this.finish.questionsLeftForTurn - 1);
-    }
 
     if (this.phase === "round1") {
       for (const [playerId, rec] of this.answers) {
@@ -421,6 +499,10 @@ export class Room {
     this.sound("buzz");
     this.roomAll().emit("buzz", { playerId, name: p.name });
     if (this.finish) this.finish.stealerId = playerId;
+    // Vong 4: nguoi cuop quyen co STEAL_TIME giay de chon dap an, roi tu dong cham.
+    if (this.phase === "round4" && this.finish?.stealOpen) {
+      this.startTimer(STEAL_TIME);
+    }
     this.broadcast();
   }
   /** MC bao nguoi thang chuong tra loi SAI -> mo chuong cho nguoi khac.
@@ -515,6 +597,8 @@ export class Room {
     this.finish.stealerId = null;
     this.finish.starOfHope = false;
     this.finish.questionsLeftForTurn = 3;
+    this.finish.ownerJudged = false;
+    this.finish.resolved = false;
     // Bat dau luot moi: xoa cau hien tai, MC phai bam goi 20/30 de nap cau dau.
     this.current = null;
     this.questionVisible = false;
@@ -552,6 +636,8 @@ export class Room {
     this.finish.starOfHope = false;
     this.finish.stealOpen = false;
     this.finish.stealerId = null;
+    this.finish.ownerJudged = false;
+    this.finish.resolved = false;
     this.current = next;
     this.questionIndex = this.questionList.indexOf(next);
     this.questionVisible = false;
@@ -574,6 +660,8 @@ export class Room {
   }
   openSteal() {
     if (!this.finish) return;
+    // Chi mo chuong cuop quyen SAU khi da cham thi sinh chinh (tranh lo/loan luong).
+    if (!this.finish.ownerJudged) return;
     this.finish.stealOpen = true;
     // Thi sinh dang tra loi khong duoc cuop quyen cua chinh minh.
     const owner = this.finish.currentPlayerId;
