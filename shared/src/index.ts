@@ -243,6 +243,7 @@ export type SoundName =
   | "correct"
   | "wrong"
   | "reveal"
+  | "answerReveal" // am thanh phat khi cong bo dap an (file vuot_chuong_ngai_vat_intro)
   | "buzz"
   | "victory"
   | "applause"

@@ -73,6 +73,9 @@ const RECIPES: Record<SoundName, () => void> = {
   reveal: () => play([
     { f: 523, t: 0, d: 0.15 }, { f: 659, t: 0.1, d: 0.15 }, { f: 784, t: 0.2, d: 0.3 },
   ]),
+  answerReveal: () => play([
+    { f: 523, t: 0, d: 0.15 }, { f: 659, t: 0.1, d: 0.15 }, { f: 784, t: 0.2, d: 0.3 },
+  ]),
   buzz: () => play([{ f: 1400, t: 0, d: 0.15, type: "square", g: 0.18 }, { f: 1800, t: 0.08, d: 0.2, type: "square", g: 0.15 }]),
   victory: () => play([
     { f: 523, t: 0, d: 0.15 }, { f: 659, t: 0.15, d: 0.15 }, { f: 784, t: 0.3, d: 0.15 },
@@ -88,6 +91,7 @@ const RECIPES: Record<SoundName, () => void> = {
 // Mot so hieu ung dung file mp3 that thay vi tong hop (vd: tieng chuong bam that).
 const SOUND_FILES: Partial<Record<SoundName, string>> = {
   buzz: "/music/bam_chuong.mp3",
+  answerReveal: "/music/vuot_chuong_ngai_vat_intro.mp3",
 };
 
 export function playSound(name: SoundName) {

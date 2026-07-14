@@ -23,6 +23,8 @@ type IO = Server<ClientToServerEvents, ServerToClientEvents>;
 const STEAL_TIME = 5;
 // Nhac nen lap lai cho moi cau hoi vong Ve dich (ke ca luc tra loi cuop quyen).
 const FINISH_MUSIC = "/music/tang_toc_sap_xep_cot_moc.mp3";
+// Nhac nen cho moi cau hoi Vong 1 (Khoi dong) va Vong 2 (Vuot chuong ngai vat).
+const ROUND12_MUSIC = "/music/tang_toc_ong_la_ai.mp3";
 
 interface PlayerInternal extends Player {
   socketId: string | null;
@@ -311,6 +313,7 @@ export class Room {
         }
         f.resolved = true;
         this.revealed = true; // cau da xong, cong bo dap an cho ca phong
+        this.sound("answerReveal");
       }
       this.broadcast();
       return;
@@ -337,6 +340,7 @@ export class Room {
       f.resolved = true;
       this.revealed = true; // dung roi, khong con ai cuop -> cong bo dap an
       this.sound("correct");
+      this.sound("answerReveal");
       this.broadcast();
     } else {
       if (f.starOfHope) owner.score -= val; // dung Ngoi sao hy vong ma sai thi bi tru
@@ -391,7 +395,7 @@ export class Room {
       if (!this.finish || !this.finish.ownerJudged) return;
       this.revealed = true;
       this.finish.resolved = true;
-      this.sound("reveal");
+      this.sound("answerReveal");
       this.broadcast();
       return;
     }
@@ -437,7 +441,7 @@ export class Room {
         if (idx >= 0 && idx < 4) this.obstacle.cornersRevealed[idx] = true;
       }
     }
-    this.sound("reveal");
+    this.sound("answerReveal");
     this.broadcast();
   }
 
@@ -719,7 +723,9 @@ export class Room {
       index: this.questionIndex,
       total: this.phase === "round2" ? this.obstacle.rows.length : this.questionList.length,
       answerFormat: this.current.answerFormat,
-      music: this.current.music,
+      music:
+        this.current.music ??
+        (this.phase === "round1" || this.phase === "round2" ? ROUND12_MUSIC : undefined),
       matchOptions: this.current.matchOptions,
       timeline: this.current.timeline,
     };
