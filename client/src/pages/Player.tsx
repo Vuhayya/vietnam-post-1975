@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { socket } from "../socket";
 import { useRoom, phaseLabel } from "../lib/useRoom";
 import Media from "../components/Media";
+import Obstacle from "../components/Obstacle";
 import PatrioticDecor, { Emblem } from "../components/PatrioticDecor";
 
 export default function Player() {
@@ -134,6 +135,10 @@ export default function Player() {
   const iAmFinalist = !!me?.inFinalFive;
   const finalSpectator = isFinalRound && !iAmFinalist;
 
+  // Vong 2: nguoi choi xem duoc buc anh + o chu ngay tren dien thoai (ban da an dap an
+  // chua mo - server chi gui do dai chu), khong phai ngong len man hinh trinh chieu.
+  const showObstacle = state?.phase === "round2" && !!state.obstacle;
+
   return (
     <div className="min-h-screen p-4 max-w-lg mx-auto flex flex-col gap-4">
       <PatrioticDecor />
@@ -163,8 +168,17 @@ export default function Player() {
         </div>
       )}
 
+      {/* Vong 2: chuong ngai vat (anh che 4 goc + o chu) */}
+      {showObstacle && (
+        <Obstacle
+          compact
+          data={state!.obstacle!}
+          activeRowId={state?.questionVisible ? q?.id : undefined}
+        />
+      )}
+
       {/* trang thai cho */}
-      {(!q || !state?.questionVisible) && !finalSpectator && (
+      {(!q || !state?.questionVisible) && !finalSpectator && !showObstacle && (
         <div className="card text-center py-10 text-white/70">
           {state?.phase === "finished"
             ? "Trận đấu đã kết thúc. Cảm ơn bạn đã tham gia!"

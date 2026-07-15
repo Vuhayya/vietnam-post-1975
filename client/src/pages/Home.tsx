@@ -46,8 +46,9 @@ export default function Home() {
       <PatrioticDecor />
       <div className="text-center flex flex-col items-center">
         <Emblem className="w-20 h-20 mb-4" />
-        <div className="text-[#ffcd00] font-black tracking-[0.3em] text-xs mb-2">
-          ĐOÀN KẾT · THỐNG NHẤT · TỰ HÀO
+        <div className="text-[#ffcd00] font-black text-xs mb-2 leading-relaxed">
+          <div className="tracking-[0.15em]">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+          <div className="tracking-[0.2em]">ĐỘC LẬP - TỰ DO - HẠNH PHÚC</div>
         </div>
         <h1 className="text-5xl md:text-6xl font-black leading-tight drop-shadow">
           VNR202 <span className="text-[#ffcd00]">CHALLENGE</span>
@@ -55,11 +56,6 @@ export default function Home() {
         <p className="text-white/75 mt-3 text-lg">
           Hành trình Thống nhất Việt Nam · Gameshow học tập
         </p>
-        <div className="mt-4 flex items-center gap-2 text-white/50 text-sm">
-          <span className="h-px w-8 bg-white/20" />
-          <span>1975 → 1976</span>
-          <span className="h-px w-8 bg-white/20" />
-        </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-5 w-full max-w-3xl">

@@ -17,16 +17,21 @@ function LetterBoxes({ length, small }: { length: number; small?: boolean }) {
   );
 }
 
-/** Hien thi chuong ngai vat: buc anh che 4 goc + cac hang ngang goi y. */
+/** Hien thi chuong ngai vat: buc anh che 4 goc + cac hang ngang goi y.
+ *  compact = ban cho dien thoai nguoi choi (khong gian rong, chu nho hon). */
 export default function Obstacle({
   data,
   activeRowId,
+  compact,
 }: {
   data: PublicObstacle;
   activeRowId?: string;
+  compact?: boolean;
 }) {
   return (
-    <div className="card flex-1 grid md:grid-cols-2 gap-6">
+    <div
+      className={`card grid gap-4 ${compact ? "!p-3" : "flex-1 md:grid-cols-2 md:gap-6"}`}
+    >
       {/* Buc anh che 4 manh: neu co du 2 anh (truoc/sau) thi tach doi trai-phai
           de the hien su doi thay, khong thi dung 1 anh day nhu cu. */}
       <div className="relative aspect-square rounded-xl overflow-hidden bg-white/5">

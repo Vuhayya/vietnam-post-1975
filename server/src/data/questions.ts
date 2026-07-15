@@ -326,7 +326,9 @@ export const ROUND3: Question[] = [
 ];
 
 // ---- VÒNG 4: VỀ ĐÍCH (kho câu hỏi - MC chọn khi đến lượt) -------------------
-export const ROUND4: Question[] = [
+// Luu y: trong danh sach goc duoi day, dap an dung LUON la phuong an A cho de soan.
+// Thu tu that su hien ra man hinh duoc dao lai o cuoi file (xem shuffleOptions).
+const ROUND4_RAW: Question[] = [
   {
     id: "r4-1",
     phase: "round4",
@@ -838,6 +840,86 @@ export const ROUND4: Question[] = [
     points: 20,
   },
 ];
+
+// ---- Đảo thứ tự phương án ---------------------------------------------------
+// Cac cau Ve dich duoc soan voi dap an dung o vi tri A. Neu de nguyen, thi sinh
+// chi can bam A la trung 30/30 cau. Ham duoi day xao lai vi tri cac phuong an va
+// danh lai nhan A/B/C/D theo vi tri moi, dong thoi cap nhat correctAnswer.
+//
+// Bo xao tron duoc gieo (seed) tu id cau hoi => thu tu giong het nhau o moi lan
+// khoi dong lai server, tranh viec MC restart giua tran thi dap an nhay lung tung.
+function seedFromId(id: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < id.length; i++) {
+    h ^= id.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function mulberry32(seed: number): () => number {
+  let a = seed;
+  return () => {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const OPTION_LABELS = ["A", "B", "C", "D", "E", "F"];
+
+function shuffleInPlace<T>(arr: T[], rnd: () => number): T[] {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/** Dat dap an dung vao vi tri `correctPos`, cac phuong an nhieu xao vao cho con lai. */
+function shuffleOptions(q: Question, correctPos: number): Question {
+  // Chi ap dung cho cau chon 1 dap an. Cau "sequence"/"match" phu thuoc vao id
+  // phuong an nen phai giu nguyen.
+  if (!q.options || q.options.length < 2) return q;
+  if (q.answerFormat && q.answerFormat !== "single") return q;
+
+  const rnd = mulberry32(seedFromId(q.id));
+  const correct = q.options.find((o) => o.id === q.correctAnswer);
+  if (!correct) return q;
+
+  const distractors = shuffleInPlace(
+    q.options.filter((o) => o.id !== q.correctAnswer),
+    rnd
+  );
+  const pos = correctPos % q.options.length;
+  const ordered = [...distractors];
+  ordered.splice(pos, 0, correct);
+
+  return {
+    ...q,
+    options: ordered.map((o, i) => ({ ...o, id: OPTION_LABELS[i] })),
+    correctAnswer: OPTION_LABELS[pos],
+  };
+}
+
+/**
+ * Rai vi tri dap an dung deu cho ca kho cau hoi: cu moi 4 cau lien tiep thi dap an
+ * dung roi du ca 4 vi tri A/B/C/D (thu tu trong tung nhom van la ngau nhien co seed).
+ * Nho vay khong con chuyen "cu bam A la trung", va cung khong bi lech kieu 10 cau A.
+ */
+function spreadAnswers(list: Question[]): Question[] {
+  const positions: number[] = [];
+  for (let i = 0; i < list.length; i += 4) {
+    shuffleInPlace([0, 1, 2, 3], mulberry32(seedFromId(`block-${i}`))).forEach((p) =>
+      positions.push(p)
+    );
+  }
+  return list.map((q, i) => shuffleOptions(q, positions[i]));
+}
+
+export const ROUND4: Question[] = spreadAnswers(ROUND4_RAW);
 
 export const ALL_QUESTIONS = {
   round1: ROUND1,
